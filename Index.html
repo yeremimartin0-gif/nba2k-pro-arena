@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#060810">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NBA 2K Pro">
+    <title>NBA 2K Pro Arena - Realtime Dashboard</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            950: '#060810',
+                            900: '#0d111d',
+                            800: '#151c2e',
+                            700: '#212b45',
+                            600: '#334155',
+                        },
+                        brand: {
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #060810; -webkit-tap-highlight-color: transparent; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0d111d; }
+        ::-webkit-scrollbar-thumb { background: #212b45; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+        .active-touch:active { transform: scale(0.97); transition: transform 0.1s ease; }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+    </style>
+</head>
+<body class="bg-dark-950 text-slate-100 min-h-screen flex flex-col selection:bg-brand-500 selection:text-white">
+
+    <!-- ================= PANTALLA DE ACCESO / LOGIN MANUAL ================= -->
+    <div id="login-gate" class="fixed inset-0 z-50 bg-dark-950 flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-dark-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 text-center">
+            
+            <!-- Logo App -->
+            <div class="flex flex-col items-center space-y-3">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center shadow-xl shadow-brand-600/30">
+                    <i data-lucide="trophy" class="w-8 h-8 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold text-white tracking-tight">NBA 2K Pro Arena</h1>
+                    <p class="text-xs text-slate-400 mt-1">Selecciona cómo deseas ingresar</p>
+                </div>
+            </div>
+
+            <!-- Contenedor dinámico de Acceso -->
+            <div id="login-form-container" class="space-y-4 text-left">
+                <!-- Se llena dinámicamente según si ya existe usuario o no -->
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================= APP DASHBOARD MAIN CONTENT ================= -->
+    <div id="app-content" class="hidden flex-col min-h-screen">
+        
+        <!-- Header & Navigation -->
+        <header class="bg-dark-900/90 backdrop-blur-md border-b border-slate-800/80 sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <!-- App Brand -->
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-brand-600/30">
+                            <i data-lucide="trophy" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-base font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-purple-300 bg-clip-text text-transparent">NBA 2K Pro Arena</h1>
+                            <p class="text-[11px] text-slate-400">Cloud Realtime Sync</p>
+                        </div>
+                    </div>
+
+                    <!-- User Profile Badge & Logout -->
+                    <div class="flex items-center space-x-2 sm:space-x-3">
+                        <div class="flex items-center space-x-2 bg-dark-800 px-3 py-1.5 rounded-xl border border-slate-700">
+                            <div id="user-avatar" class="w-6 h-6 rounded-lg bg-brand-600 text-white flex items-center justify-center font-bold text-xs">J</div>
+                            <span id="user-display-name" class="text-xs font-semibold text-slate-200">Admin</span>
+                        </div>
+                        <button onclick="handleLogout()" class="p-2 bg-dark-800 hover:bg-rose-500/10 hover:text-rose-400 text-slate-400 rounded-xl border border-slate-700 transition active-touch" title="Cerrar sesión">
+                            <i data-lucide="log-out" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Desktop Header Tabs -->
+                <div class="hidden sm:flex space-x-2 overflow-x-auto py-2.5 scrollbar-none border-t border-slate-800/40">
+                    <button onclick="switchTab('resumen')" id="tab-btn-resumen" class="tab-btn flex items-center space-x-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap bg-brand-600 text-white shadow-lg shadow-brand-600/25">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                        <span>Resumen</span>
+                    </button>
+                    <button onclick="switchTab('registrar')" id="tab-btn-registrar" class="tab-btn admin-only flex items-center space-x-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap bg-dark-800 text-slate-400 hover:bg-dark-700 hover:text-white">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        <span>Registrar partido</span>
+                    </button>
+                    <button onclick="switchTab('jugadores')" id="tab-btn-jugadores" class="tab-btn flex items-center space-x-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap bg-dark-800 text-slate-400 hover:bg-dark-700 hover:text-white">
+                        <i data-lucide="users" class="w-4 h-4"></i>
+                        <span>Jugadores</span>
+                    </button>
+                    <button onclick="switchTab('caracara')" id="tab-btn-caracara" class="tab-btn flex items-center space-x-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap bg-dark-800 text-slate-400 hover:bg-dark-700 hover:text-white">
+                        <i data-lucide="swords" class="w-4 h-4"></i>
+                        <span>Cara a cara</span>
+                    </button>
+                    <button onclick="switchTab('historial')" id="tab-btn-historial" class="tab-btn flex items-center space-x-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap bg-dark-800 text-slate-400 hover:bg-dark-700 hover:text-white">
+                        <i data-lucide="history" class="w-4 h-4"></i>
+                        <span>Historial</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Container -->
+        <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-20 sm:pb-6">
+
+            <!-- TAB 1: RESUMEN -->
+            <div id="tab-resumen" class="tab-content space-y-4 sm:space-y-6">
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                    <div class="bg-dark-900 border border-slate-800/80 rounded-2xl p-4 sm:p-5 shadow-xl relative overflow-hidden group hover:border-brand-500/50 transition">
+                        <p class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">Partidos</p>
+                        <div class="mt-2 flex items-baseline justify-between">
+                            <span id="kpi-total-matches" class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">0</span>
+                            <div class="p-2 sm:p-2.5 rounded-xl bg-brand-500/10 text-brand-400">
+                                <i data-lucide="gamepad-2" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-dark-900 border border-slate-800/80 rounded-2xl p-4 sm:p-5 shadow-xl relative overflow-hidden group hover:border-indigo-500/50 transition">
+                        <p class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">Jugadores</p>
+                        <div class="mt-2 flex items-baseline justify-between">
+                            <span id="kpi-total-players" class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">3</span>
+                            <div class="p-2 sm:p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400">
+                                <i data-lucide="users" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-dark-900 border border-slate-800/80 rounded-2xl p-4 sm:p-5 shadow-xl relative overflow-hidden group hover:border-emerald-500/50 transition">
+                        <p class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">Mejor %</p>
+                        <div class="mt-2 flex items-baseline justify-between">
+                            <span id="kpi-best-winrate" class="text-lg sm:text-2xl font-extrabold text-emerald-400 tracking-tight">—</span>
+                            <div class="p-2 sm:p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400">
+                                <i data-lucide="trending-up" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-dark-900 border border-slate-800/80 rounded-2xl p-4 sm:p-5 shadow-xl relative overflow-hidden group hover:border-amber-500/50 transition">
+                        <p class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">Líder actual</p>
+                        <div class="mt-2 flex items-baseline justify-between">
+                            <span id="kpi-current-leader" class="text-base sm:text-xl font-bold text-amber-400 tracking-tight truncate">—</span>
+                            <div class="p-2 sm:p-2.5 rounded-xl bg-amber-500/10 text-amber-400">
+                                <i data-lucide="award" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-dark-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-sm sm:text-base font-bold text-white flex items-center space-x-2">
+                                <i data-lucide="medal" class="w-5 h-5 text-brand-400"></i>
+                                <span>Tabla General de Posiciones</span>
+                            </h2>
+                            <span class="text-[11px] text-slate-400">Por % Vict.</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="border-b border-slate-800 text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                                        <th class="py-3 px-2 sm:px-4">Pos</th>
+                                        <th class="py-3 px-2 sm:px-4">Jugador</th>
+                                        <th class="py-3 px-2 sm:px-4 text-center">PJ</th>
+                                        <th class="py-3 px-2 sm:px-4 text-center">PG</th>
+                                        <th class="py-3 px-2 sm:px-4 text-center">PP</th>
+                                        <th class="py-3 px-2 sm:px-4 text-center">Racha</th>
+                                        <th class="py-3 px-2 sm:px-4 text-right">% Vict.</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="standings-table-body" class="divide-y divide-slate-800/60 text-xs sm:text-sm"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-dark-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl flex flex-col space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-sm sm:text-base font-bold text-white flex items-center space-x-2">
+                                <i data-lucide="calendar" class="w-5 h-5 text-indigo-400"></i>
+                                <span>Resumen por Jornadas</span>
+                            </h2>
+                            <span class="text-[11px] text-slate-400">Cloud Sync</span>
+                        </div>
+                        <div id="jornadas-container" class="space-y-3 overflow-y-auto max-h-[380px] pr-1"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: REGISTRAR PARTIDO (ADMIN ONLY) -->
+            <div id="tab-registrar" class="tab-content hidden max-w-2xl mx-auto space-y-6">
+                <div class="bg-dark-900 border border-slate-800 rounded-2xl p-5 sm:p-8 shadow-2xl space-y-6">
+                    <div class="flex items-center space-x-3 pb-4 border-b border-slate-800">
+                        <div class="p-3 bg-brand-500/10 text-brand-400 rounded-xl">
+                            <i data-lucide="plus-circle" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-base sm:text-lg font-bold text-white">Registrar Nuevo Partido</h2>
+                            <p class="text-xs text-slate-400">Selecciona ganador, perdedor y equipos</p>
+                        </div>
+                    </div>
+
+                    <form id="match-form" onsubmit="handleRegisterMatch(event)" class="space-y-5">
+                        <div class="bg-emerald-950/20 border border-emerald-500/30 rounded-2xl p-4 sm:p-5 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-2 text-emerald-400 font-bold text-xs uppercase tracking-wider">
+                                    <i data-lucide="trophy" class="w-4 h-4"></i>
+                                    <span>GANADOR</span>
+                                </div>
+                                <img id="winner-logo-preview" src="" alt="" class="w-8 h-8 object-contain hidden bg-dark-800 rounded-lg p-1 border border-slate-700">
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Jugador Ganador</label>
+                                    <select id="winner-player" required onchange="onPlayerSelectChange('winner')" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500 transition"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Equipo NBA (Ganador)</label>
+                                    <select id="winner-team" required onchange="updateTeamLogoPreview('winner')" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500 transition"></select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-rose-950/20 border border-rose-500/30 rounded-2xl p-4 sm:p-5 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-2 text-rose-400 font-bold text-xs uppercase tracking-wider">
+                                    <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                                    <span>PERDEDOR</span>
+                                </div>
+                                <img id="loser-logo-preview" src="" alt="" class="w-8 h-8 object-contain hidden bg-dark-800 rounded-lg p-1 border border-slate-700">
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Jugador Perdedor</label>
+                                    <select id="loser-player" required onchange="onPlayerSelectChange('loser')" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-rose-500 transition"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Equipo NBA (Perdedor)</label>
+                                    <select id="loser-team" required onchange="updateTeamLogoPreview('loser')" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-rose-500 transition"></select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1.5">Fecha del Partido</label>
+                            <input type="date" id="match-date" required class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-brand-500 transition">
+                        </div>
+
+                        <button type="submit" class="w-full bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-brand-600/30 transition flex items-center justify-center space-x-2 text-sm active-touch">
+                            <i data-lucide="check-circle" class="w-4 h-4"></i>
+                            <span>Guardar Partido y Sincronizar en la Nube</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- TAB 3: JUGADORES -->
+            <div id="tab-jugadores" class="tab-content hidden space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-dark-900 border border-slate-800 p-5 sm:p-6 rounded-2xl shadow-xl">
+                    <div>
+                        <h2 class="text-base sm:text-lg font-bold text-white flex items-center space-x-2">
+                            <i data-lucide="users" class="w-5 h-5 text-brand-400"></i>
+                            <span>Perfil de Jugadores</span>
+                        </h2>
+                        <p class="text-xs text-slate-400">Estadísticas detalladas de los participantes</p>
+                    </div>
+                    <button onclick="openAddPlayerModal()" class="admin-only w-full sm:w-auto bg-brand-600 hover:bg-brand-500 text-white px-4 py-2.5 rounded-xl font-semibold text-xs sm:text-sm shadow-lg shadow-brand-600/30 transition flex items-center justify-center space-x-2 active-touch">
+                        <i data-lucide="user-plus" class="w-4 h-4"></i>
+                        <span>Nuevo Jugador</span>
+                    </button>
+                </div>
+
+                <div id="players-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6"></div>
+            </div>
+
+            <!-- TAB 4: CARA A CARA -->
+            <div id="tab-caracara" class="tab-content hidden space-y-6">
+                <div class="bg-dark-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl space-y-6">
+                    <div class="flex items-center space-x-3">
+                        <div class="p-3 bg-indigo-500/10 text-indigo-400 rounded-xl">
+                            <i data-lucide="swords" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-base sm:text-lg font-bold text-white">Cara a Cara (Head to Head)</h2>
+                            <p class="text-xs text-slate-400">Comparativa directa entre rivales</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-dark-950 p-4 rounded-2xl border border-slate-800">
+                        <div>
+                            <label class="block text-xs font-semibold text-brand-400 uppercase tracking-wider mb-1.5">Jugador 1</label>
+                            <select id="h2h-player1" onchange="updateH2H()" class="w-full bg-dark-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-brand-500 transition"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-1.5">Jugador 2</label>
+                            <select id="h2h-player2" onchange="updateH2H()" class="w-full bg-dark-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-indigo-500 transition"></select>
+                        </div>
+                    </div>
+
+                    <div id="h2h-results" class="space-y-6"></div>
+                </div>
+            </div>
+
+            <!-- TAB 5: HISTORIAL -->
+            <div id="tab-historial" class="tab-content hidden space-y-6">
+                <div class="bg-dark-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl space-y-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h2 class="text-base sm:text-lg font-bold text-white flex items-center space-x-2">
+                                <i data-lucide="history" class="w-5 h-5 text-brand-400"></i>
+                                <span>Historial Completo de Partidos</span>
+                            </h2>
+                            <p class="text-xs text-slate-400">Registro sincronizado en tiempo real</p>
+                        </div>
+                        <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                            <input type="text" id="historial-search" oninput="renderHistorial()" placeholder="Buscar equipo o fecha..." class="w-full sm:w-56 bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-brand-500 transition">
+                            <select id="historial-filter-player" onchange="renderHistorial()" class="w-full sm:w-auto bg-dark-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-500 transition">
+                                <option value="Todos los jugadores">Todos los jugadores</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                                    <th class="py-3 px-3">#</th>
+                                    <th class="py-3 px-3">Fecha</th>
+                                    <th class="py-3 px-3 text-emerald-400">Ganador</th>
+                                    <th class="py-3 px-3 text-rose-400">Perdedor</th>
+                                    <th class="py-3 px-3 text-center admin-only">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historial-table-body" class="divide-y divide-slate-800/60 text-xs sm:text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Mobile Bottom Navigation Bar -->
+        <nav class="sm:hidden fixed bottom-0 left-0 right-0 bg-dark-900/95 backdrop-blur-lg border-t border-slate-800/80 z-40 px-2 py-2 pb-safe">
+            <div class="grid grid-cols-5 gap-1 text-center">
+                <button onclick="switchTab('resumen')" id="mob-tab-btn-resumen" class="mob-tab-btn flex flex-col items-center py-1 rounded-xl text-brand-400 active-touch">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span class="text-[10px] font-medium mt-0.5">Resumen</span>
+                </button>
+                <button onclick="switchTab('registrar')" id="mob-tab-btn-registrar" class="mob-tab-btn admin-only flex flex-col items-center py-1 rounded-xl text-slate-400 active-touch">
+                    <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                    <span class="text-[10px] font-medium mt-0.5">Nuevo</span>
+                </button>
+                <button onclick="switchTab('jugadores')" id="mob-tab-btn-jugadores" class="mob-tab-btn flex flex-col items-center py-1 rounded-xl text-slate-400 active-touch">
+                    <i data-lucide="users" class="w-5 h-5"></i>
+                    <span class="text-[10px] font-medium mt-0.5">Jugadores</span>
+                </button>
+                <button onclick="switchTab('caracara')" id="mob-tab-btn-caracara" class="mob-tab-btn flex flex-col items-center py-1 rounded-xl text-slate-400 active-touch">
+                    <i data-lucide="swords" class="w-5 h-5"></i>
+                    <span class="text-[10px] font-medium mt-0.5">VS</span>
+                </button>
+                <button onclick="switchTab('historial')" id="mob-tab-btn-historial" class="mob-tab-btn flex flex-col items-center py-1 rounded-xl text-slate-400 active-touch">
+                    <i data-lucide="history" class="w-5 h-5"></i>
+                    <span class="text-[10px] font-medium mt-0.5">Historial</span>
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Modal para Editar Partido -->
+    <div id="edit-match-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-dark-900 border border-slate-700 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                <h3 class="text-base font-bold text-white flex items-center space-x-2">
+                    <i data-lucide="edit-3" class="w-5 h-5 text-brand-400"></i>
+                    <span>Editar Partido</span>
+                </h3>
+                <button onclick="closeEditMatchModal()" class="text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form onsubmit="handleSaveEditMatch(event)" class="space-y-4">
+                <input type="hidden" id="edit-match-id">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Fecha</label>
+                    <input type="date" id="edit-match-date" required class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-brand-500 transition">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-emerald-950/20 border border-emerald-500/30 p-3 rounded-xl">
+                    <div>
+                        <label class="block text-[11px] font-medium text-emerald-400 mb-1">Ganador</label>
+                        <select id="edit-winner-player" required class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition"></select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-medium text-emerald-400 mb-1">Equipo Ganador</label>
+                        <select id="edit-winner-team" required class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition"></select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-rose-950/20 border border-rose-500/30 p-3 rounded-xl">
+                    <div>
+                        <label class="block text-[11px] font-medium text-rose-400 mb-1">Perdedor</label>
+                        <select id="edit-loser-player" required class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500 transition"></select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-medium text-rose-400 mb-1">Equipo Perdedor</label>
+                        <select id="edit-loser-team" required class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500 transition"></select>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeEditMatchModal()" class="px-4 py-2 rounded-xl text-xs font-medium bg-dark-800 text-slate-300 hover:bg-dark-700 transition">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-xs font-semibold bg-brand-600 text-white hover:bg-brand-500 transition active-touch">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Agregar Jugador -->
+    <div id="add-player-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-dark-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-base font-bold text-white flex items-center space-x-2">
+                    <i data-lucide="user-plus" class="w-5 h-5 text-brand-400"></i>
+                    <span>Agregar Nuevo Jugador</span>
+                </h3>
+                <button onclick="closeAddPlayerModal()" class="text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form onsubmit="handleAddPlayer(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Nombre del Jugador</label>
+                    <input type="text" id="new-player-name" required placeholder="Ej. Carlos" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-brand-500 transition">
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeAddPlayerModal()" class="px-4 py-2 rounded-xl text-xs font-medium bg-dark-800 text-slate-300 hover:bg-dark-700 transition">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-xs font-semibold bg-brand-600 text-white hover:bg-brand-500 transition active-touch">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 flex items-center space-x-3 bg-dark-800 border border-slate-700 px-4 py-3 rounded-xl shadow-2xl">
+        <div id="toast-icon"></div>
+        <span id="toast-message" class="text-xs font-semibold text-white"></span>
+    </div>
+
+    <!-- CDNs -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <script>
+        const nbaTeams = [
+            { name: "Atlanta Hawks", code: "ATL", logo: "https://a.espncdn.com/i/teamlogos/nba/500/atl.png" },
+            { name: "Boston Celtics", code: "BOS", logo: "https://a.espncdn.com/i/teamlogos/nba/500/bos.png" },
+            { name: "Brooklyn Nets", code: "BKN", logo: "https://a.espncdn.com/i/teamlogos/nba/500/bkn.png" },
+            { name: "Charlotte Hornets", code: "CHA", logo: "https://a.espncdn.com/i/teamlogos/nba/500/cha.png" },
+            { name: "Chicago Bulls", code: "CHI", logo: "https://a.espncdn.com/i/teamlogos/nba/500/chi.png" },
+            { name: "Cleveland Cavaliers", code: "CLE", logo: "https://a.espncdn.com/i/teamlogos/nba/500/cle.png" },
+            { name: "Dallas Mavericks", code: "DAL", logo: "https://a.espncdn.com/i/teamlogos/nba/500/dal.png" },
+            { name: "Denver Nuggets", code: "DEN", logo: "https://a.espncdn.com/i/teamlogos/nba/500/den.png" },
+            { name: "Detroit Pistons", code: "DET", logo: "https://a.espncdn.com/i/teamlogos/nba/500/det.png" },
+            { name: "Golden State Warriors", code: "GSW", logo: "https://a.espncdn.com/i/teamlogos/nba/500/gsw.png" },
+            { name: "Houston Rockets", code: "HOU", logo: "https://a.espncdn.com/i/teamlogos/nba/500/hou.png" },
+            { name: "Indiana Pacers", code: "IND", logo: "https://a.espncdn.com/i/teamlogos/nba/500/ind.png" },
+            { name: "LA Clippers", code: "LAC", logo: "https://a.espncdn.com/i/teamlogos/nba/500/lac.png" },
+            { name: "Los Angeles Lakers", code: "LAL", logo: "https://a.espncdn.com/i/teamlogos/nba/500/lal.png" },
+            { name: "Memphis Grizzlies", code: "MEM", logo: "https://a.espncdn.com/i/teamlogos/nba/500/mem.png" },
+            { name: "Miami Heat", code: "MIA", logo: "https://a.espncdn.com/i/teamlogos/nba/500/mia.png" },
+            { name: "Milwaukee Bucks", code: "MIL", logo: "https://a.espncdn.com/i/teamlogos/nba/500/mil.png" },
+            { name: "Minnesota Timberwolves", code: "MIN", logo: "https://a.espncdn.com/i/teamlogos/nba/500/min.png" },
+            { name: "New Orleans Pelicans", code: "NOP", logo: "https://a.espncdn.com/i/teamlogos/nba/500/nop.png" },
+            { name: "New York Knicks", code: "NYK", logo: "https://a.espncdn.com/i/teamlogos/nba/500/nyk.png" },
+            { name: "Oklahoma City Thunder", code: "OKC", logo: "https://a.espncdn.com/i/teamlogos/nba/500/okc.png" },
+            { name: "Orlando Magic", code: "ORL", logo: "https://a.espncdn.com/i/teamlogos/nba/500/orl.png" },
+            { name: "Philadelphia 76ers", code: "PHI", logo: "https://a.espncdn.com/i/teamlogos/nba/500/phi.png" },
+            { name: "Phoenix Suns", code: "PHX", logo: "https://a.espncdn.com/i/teamlogos/nba/500/phx.png" },
+            { name: "Portland Trail Blazers", code: "POR", logo: "https://a.espncdn.com/i/teamlogos/nba/500/por.png" },
+            { name: "Sacramento Kings", code: "SAC", logo: "https://a.espncdn.com/i/teamlogos/nba/500/sac.png" },
+            { name: "San Antonio Spurs", code: "SAS", logo: "https://a.espncdn.com/i/teamlogos/nba/500/sas.png" },
+            { name: "Toronto Raptors", code: "TOR", logo: "https://a.espncdn.com/i/teamlogos/nba/500/tor.png" },
+            { name: "Utah Jazz", code: "UTA", logo: "https://a.espncdn.com/i/teamlogos/nba/500/uta.png" },
+            { name: "Washington Wizards", code: "WAS", logo: "https://a.espncdn.com/i/teamlogos/nba/500/was.png" }
+        ];
+
+        let currentUserRole = localStorage.getItem('nba2k_user_role') || null;
+        let adminName = localStorage.getItem('nba2k_admin_name') || null;
+        let adminPassword = localStorage.getItem('nba2k_admin_password') || null;
+
+        function renderLoginGate() {
+            const container = document.getElementById('login-form-container');
+            container.innerHTML = '';
+
+            if (!adminName) {
+                container.innerHTML = `
+                    <div class="bg-dark-950 p-5 rounded-2xl border border-slate-800 space-y-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-brand-600 text-white font-extrabold flex items-center justify-center text-sm">👑</div>
+                            <div>
+                                <p class="text-sm font-bold text-white">Configurar Administrador</p>
+                                <p class="text-[11px] text-brand-400">Crea tu usuario único y contraseña</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Nombre de Administrador</label>
+                                <input type="text" id="setup-admin-name" placeholder="Ej. Jheremy Peña" class="w-full bg-dark-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-brand-500 transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Contraseña</label>
+                                <input type="password" id="setup-admin-password" placeholder="Crea tu contraseña" class="w-full bg-dark-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-brand-500 transition">
+                            </div>
+                        </div>
+                        <button onclick="handleCreateAdmin(event)" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-semibold py-3 rounded-xl transition text-xs shadow-lg shadow-brand-600/30 active-touch">
+                            Guardar y Registrarme
+                        </button>
+                    </div>
+
+                    <div class="relative flex py-1 items-center">
+                        <div class="flex-grow border-t border-slate-800"></div>
+                        <span class="flex-shrink mx-4 text-slate-500 text-[10px] uppercase font-semibold">O</span>
+                        <div class="flex-grow border-t border-slate-800"></div>
+                    </div>
+
+                    <div onclick="handleLoginGuest()" class="p-4 rounded-2xl bg-dark-950 border border-slate-800 hover:border-slate-700 cursor-pointer transition flex items-center justify-between group active-touch">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-slate-800 text-slate-300 font-extrabold flex items-center justify-center text-sm">G</div>
+                            <div>
+                                <p class="text-sm font-bold text-white">Entrar como Invitado</p>
+                                <p class="text-[11px] text-slate-400">Modo Solo Lectura</p>
+                            </div>
+                        </div>
+                        <i data-lucide="arrow-right" class="w-4 h-4 text-slate-500 group-hover:text-white transition"></i>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="p-4 rounded-2xl bg-dark-950 border-2 border-brand-500/80 space-y-3">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-brand-600 text-white font-extrabold flex items-center justify-center text-sm">
+                                ${adminName.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-white">${adminName}</p>
+                                <p class="text-[11px] text-brand-400 font-medium">Administrador (Acceso Total)</p>
+                            </div>
+                        </div>
+                        <div class="pt-2 border-t border-slate-800/80 space-y-2">
+                            <input type="password" id="login-admin-password" placeholder="Ingresa tu contraseña" class="w-full bg-dark-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-brand-500 transition">
+                            <button onclick="handleLoginAdmin()" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-semibold py-2.5 rounded-xl transition text-xs shadow-lg shadow-brand-600/30 active-touch flex items-center justify-center space-x-2">
+                                <span>Ingresar como Admin</span>
+                                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div onclick="handleLoginGuest()" class="p-4 rounded-2xl bg-dark-950 border border-slate-800 hover:border-slate-700 cursor-pointer transition flex items-center justify-between group active-touch">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-slate-800 text-slate-300 font-extrabold flex items-center justify-center text-sm">G</div>
+                            <div>
+                                <p class="text-sm font-bold text-white">Entrar como Invitado</p>
+                                <p class="text-[11px] text-slate-400">Modo Solo Lectura</p>
+                            </div>
+                        </div>
+                        <i data-lucide="arrow-right" class="w-4 h-4 text-slate-500 group-hover:text-white transition"></i>
+                    </div>
+
+                    <div class="text-center pt-1">
+                        <button onclick="resetAdminAccount()" class="text-[11px] text-slate-500 hover:text-rose-400 underline transition">
+                            ¿Restablecer cuenta de Administrador?
+                        </button>
+                    </div>
+                `;
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function handleCreateAdmin(e) {
+            e.preventDefault();
+            const nameInput = document.getElementById('setup-admin-name').value.trim();
+            const passInput = document.getElementById('setup-admin-password').value.trim();
+
+            if (!nameInput || !passInput) {
+                showToast("Por favor completa nombre y contraseña", "error");
+                return;
+            }
+
+            adminName = nameInput;
+            adminPassword = passInput;
+
+            localStorage.setItem('nba2k_admin_name', adminName);
+            localStorage.setItem('nba2k_admin_password', adminPassword);
+
+            currentUserRole = 'admin';
+            localStorage.setItem('nba2k_user_role', 'admin');
+            checkSessionGate();
+            showToast(`¡Usuario ${adminName} registrado e ingresado!`);
+        }
+
+        function handleLoginAdmin() {
+            const inputPass = document.getElementById('login-admin-password').value.trim();
+
+            if (inputPass !== adminPassword) {
+                showToast("Contraseña incorrecta", "error");
+                return;
+            }
+
+            currentUserRole = 'admin';
+            localStorage.setItem('nba2k_user_role', 'admin');
+            checkSessionGate();
+            showToast(`¡Bienvenido ${adminName}!`);
+        }
+
+        function handleLoginGuest() {
+            currentUserRole = 'guest';
+            localStorage.setItem('nba2k_user_role', 'guest');
+            checkSessionGate();
+            showToast("Accediendo como Invitado");
+        }
+
+        function resetAdminAccount() {
+            if (confirm("¿Deseas restablecer la cuenta de administrador para crear un usuario nuevo?")) {
+                localStorage.removeItem('nba2k_admin_name');
+                localStorage.removeItem('nba2k_admin_password');
+                adminName = null;
+                adminPassword = null;
+                renderLoginGate();
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('nba2k_user_role');
+            currentUserRole = null;
+            checkSessionGate();
+            showToast("Sesión cerrada");
+        }
+
+        function checkSessionGate() {
+            const loginGate = document.getElementById('login-gate');
+            const appContent = document.getElementById('app-content');
+
+            if (!currentUserRole) {
+                loginGate.classList.remove('hidden');
+                appContent.classList.add('hidden');
+                appContent.classList.remove('flex');
+                renderLoginGate();
+            } else {
+                loginGate.classList.add('hidden');
+                appContent.classList.remove('hidden');
+                appContent.classList.add('flex');
+                applyRolePermissions();
+                renderResumen();
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function applyRolePermissions() {
+            const adminElements = document.querySelectorAll('.admin-only');
+            if (currentUserRole === 'admin') {
+                document.getElementById('user-avatar').textContent = adminName ? adminName.charAt(0).toUpperCase() : 'J';
+                document.getElementById('user-avatar').className = 'w-6 h-6 rounded-lg bg-brand-600 text-white flex items-center justify-center font-bold text-xs';
+                document.getElementById('user-display-name').textContent = `${adminName || 'Admin'} (Admin)`;
+                adminElements.forEach(el => el.classList.remove('hidden'));
+            } else {
+                document.getElementById('user-avatar').textContent = 'G';
+                document.getElementById('user-avatar').className = 'w-6 h-6 rounded-lg bg-slate-700 text-slate-300 flex items-center justify-center font-bold text-xs';
+                document.getElementById('user-display-name').textContent = 'Invitado (Guest)';
+                adminElements.forEach(el => el.classList.add('hidden'));
+
+                const regTab = document.getElementById('tab-registrar');
+                if (regTab && !regTab.classList.contains('hidden')) {
+                    switchTab('resumen');
+                }
+            }
+        }
+
+        // Estado Global
+        let appState = JSON.parse(localStorage.getItem('nba2k_excel_app_state')) || {
+            players: ["Joel", "Aaron", "Jheremy"],
+            matches: []
+        };
+
+        function saveStateOriginal() {
+            localStorage.setItem('nba2k_excel_app_state', JSON.stringify(appState));
+        }
+
+        function saveState() {
+            if (currentUserRole !== 'admin') {
+                showToast("Acceso denegado: Solo el Administrador puede modificar registros", "error");
+                return;
+            }
+            saveStateOriginal();
+            if (typeof db !== 'undefined' && !cargandoDesdeNube) {
+                db.ref('appState').set(appState)
+                  .catch((error) => console.error("Error al sincronizar con la nube:", error));
+            }
+        }
+
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const messageEl = document.getElementById('toast-message');
+            const iconEl = document.getElementById('toast-icon');
+
+            messageEl.textContent = msg;
+            iconEl.innerHTML = type === 'success' 
+                ? '<i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i>' 
+                : '<i data-lucide="alert-circle" class="w-5 h-5 text-rose-400"></i>';
+            
+            if (window.lucide) lucide.createIcons();
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+        }
+
+        function switchTab(tabId) {
+            if (tabId === 'registrar' && currentUserRole !== 'admin') {
+                showToast("Acceso denegado: Solo el Administrador puede registrar partidos", "error");
+                return;
+            }
+
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-brand-600', 'text-white', 'shadow-lg', 'shadow-brand-600/25');
+                btn.classList.add('bg-dark-800', 'text-slate-400');
+            });
+            const activeDesktopBtn = document.getElementById(`tab-btn-${tabId}`);
+            if (activeDesktopBtn) {
+                activeDesktopBtn.classList.remove('bg-dark-800', 'text-slate-400');
+                activeDesktopBtn.classList.add('bg-brand-600', 'text-white', 'shadow-lg', 'shadow-brand-600/25');
+            }
+
+            document.querySelectorAll('.mob-tab-btn').forEach(btn => {
+                btn.classList.remove('text-brand-400');
+                btn.classList.add('text-slate-400');
+            });
+            const activeMobileBtn = document.getElementById(`mob-tab-btn-${tabId}`);
+            if (activeMobileBtn) {
+                activeMobileBtn.classList.remove('text-slate-400');
+                activeMobileBtn.classList.add('text-brand-400');
+            }
+
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+            if (tabId === 'resumen') renderResumen();
+            if (tabId === 'registrar') initRegisterForm();
+            if (tabId === 'jugadores') renderJugadores();
+            if (tabId === 'caracara') initH2H();
+            if (tabId === 'historial') renderHistorial();
+
+            if (window.lucide) lucide.createIcons();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function getPlayerStats() {
+            const stats = {};
+            appState.players.forEach(p => {
+                stats[p] = { name: p, played: 0, wins: 0, losses: 0, winRate: 0, teamsUsed: {}, streak: [] };
+            });
+
+            const sortedMatches = [...appState.matches].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            sortedMatches.forEach(m => {
+                if (stats[m.winnerPlayer]) {
+                    stats[m.winnerPlayer].played++;
+                    stats[m.winnerPlayer].wins++;
+                    stats[m.winnerPlayer].teamsUsed[m.winnerTeam] = (stats[m.winnerPlayer].teamsUsed[m.winnerTeam] || 0) + 1;
+                    stats[m.winnerPlayer].streak.push('W');
+                }
+                if (stats[m.loserPlayer]) {
+                    stats[m.loserPlayer].played++;
+                    stats[m.loserPlayer].losses++;
+                    stats[m.loserPlayer].teamsUsed[m.loserTeam] = (stats[m.loserPlayer].teamsUsed[m.loserTeam] || 0) + 1;
+                    stats[m.loserPlayer].streak.push('L');
+                }
+            });
+
+            Object.values(stats).forEach(s => {
+                s.winRate = s.played > 0 ? ((s.wins / s.played) * 100).toFixed(1) : 0;
+                
+                let currentStreakType = null;
+                let streakCount = 0;
+                for (let i = s.streak.length - 1; i >= 0; i--) {
+                    if (!currentStreakType) {
+                        currentStreakType = s.streak[i];
+                        streakCount = 1;
+                    } else if (s.streak[i] === currentStreakType) {
+                        streakCount++;
+                    } else {
+                        break;
+                    }
+                }
+                s.currentStreakStr = streakCount > 0 ? `${streakCount}${currentStreakType === 'W' ? 'V' : 'D'}` : '—';
+            });
+
+            return Object.values(stats).sort((a, b) => b.wins - a.wins || b.winRate - a.winRate);
+        }
+
+        // Función para obtener el equipo más usado por un jugador en victorias o derrotas
+        function getMostUsedTeamForPlayer(playerName, isWinner) {
+            const teamCounts = {};
+            appState.matches.forEach(m => {
+                if (isWinner && m.winnerPlayer === playerName) {
+                    teamCounts[m.winnerTeam] = (teamCounts[m.winnerTeam] || 0) + 1;
+                } else if (!isWinner && m.loserPlayer === playerName) {
+                    teamCounts[m.loserTeam] = (teamCounts[m.loserTeam] || 0) + 1;
+                }
+            });
+
+            let mostUsed = null;
+            let maxCount = 0;
+            Object.entries(teamCounts).forEach(([team, count]) => {
+                if (count > maxCount) {
+                    maxCount = count;
+                    mostUsed = team;
+                }
+            });
+
+            // Si no tiene registros específicos en V/D, buscar su equipo más usado general
+            if (!mostUsed) {
+                appState.matches.forEach(m => {
+                    if (m.winnerPlayer === playerName) teamCounts[m.winnerTeam] = (teamCounts[m.winnerTeam] || 0) + 1;
+                    if (m.loserPlayer === playerName) teamCounts[m.loserTeam] = (teamCounts[m.loserTeam] || 0) + 1;
+                });
+                Object.entries(teamCounts).forEach(([team, count]) => {
+                    if (count > maxCount) {
+                        maxCount = count;
+                        mostUsed = team;
+                    }
+                });
+            }
+
+            return mostUsed;
+        }
+
+        function onPlayerSelectChange(type) {
+            const player = document.getElementById(`${type}-player`).value;
+            const teamSelect = document.getElementById(`${type}-team`);
+            const mostUsedTeam = getMostUsedTeamForPlayer(player, type === 'winner');
+
+            if (mostUsedTeam) {
+                teamSelect.value = mostUsedTeam;
+            }
+            updateTeamLogoPreview(type);
+        }
+
+        function renderResumen() {
+            const stats = getPlayerStats();
+            document.getElementById('kpi-total-matches').textContent = appState.matches.length;
+            document.getElementById('kpi-total-players').textContent = appState.players.length;
+
+            if (stats.length > 0) {
+                const bestByPct = [...stats].sort((a, b) => b.winRate - a.winRate)[0];
+                document.getElementById('kpi-best-winrate').textContent = `${bestByPct.winRate}% (${bestByPct.name})`;
+                document.getElementById('kpi-current-leader').textContent = `${stats[0].name} (${stats[0].wins}V)`;
+            }
+
+            const tbody = document.getElementById('standings-table-body');
+            tbody.innerHTML = '';
+            stats.forEach((s, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-dark-800/40 transition';
+                tr.innerHTML = `
+                    <td class="py-3 px-2 sm:px-4 font-bold text-slate-500">#${idx + 1}</td>
+                    <td class="py-3 px-2 sm:px-4 font-bold text-white flex items-center space-x-2">
+                        <div class="w-6 h-6 rounded-md bg-brand-500/20 text-brand-400 flex items-center justify-center text-xs">${s.name.charAt(0)}</div>
+                        <span>${s.name}</span>
+                    </td>
+                    <td class="py-3 px-2 sm:px-4 text-center font-mono text-slate-300">${s.played}</td>
+                    <td class="py-3 px-2 sm:px-4 text-center font-mono text-emerald-400 font-semibold">${s.wins}</td>
+                    <td class="py-3 px-2 sm:px-4 text-center font-mono text-rose-400 font-semibold">${s.losses}</td>
+                    <td class="py-3 px-2 sm:px-4 text-center font-mono font-semibold ${s.currentStreakStr.includes('V') ? 'text-emerald-400' : 'text-rose-400'}">${s.currentStreakStr}</td>
+                    <td class="py-3 px-2 sm:px-4 text-right font-mono font-bold text-white">${s.winRate}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const jornadasContainer = document.getElementById('jornadas-container');
+            jornadasContainer.innerHTML = '';
+
+            const dateGroups = {};
+            appState.matches.forEach(m => {
+                if (!dateGroups[m.date]) dateGroups[m.date] = [];
+                dateGroups[m.date].push(m);
+            });
+
+            const dates = Object.keys(dateGroups).sort();
+
+            if (dates.length === 0) {
+                jornadasContainer.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">No hay jornadas registradas aún.</p>`;
+                return;
+            }
+
+            dates.forEach((date, index) => {
+                const matches = dateGroups[date];
+                const dayStats = {};
+                appState.players.forEach(p => dayStats[p] = { wins: 0, losses: 0 });
+
+                matches.forEach(m => {
+                    if (dayStats[m.winnerPlayer]) dayStats[m.winnerPlayer].wins++;
+                    if (dayStats[m.loserPlayer]) dayStats[m.loserPlayer].losses++;
+                });
+
+                const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+                const card = document.createElement('div');
+                card.className = 'bg-dark-950 p-3.5 rounded-xl border border-slate-800 space-y-2';
+                
+                let statsHTML = Object.entries(dayStats)
+                    .filter(([_, data]) => (data.wins + data.losses) > 0)
+                    .map(([player, data]) => `
+                        <div class="flex justify-between text-xs py-1 border-b border-slate-800/40 last:border-0">
+                            <span class="font-medium text-slate-300">${player}</span>
+                            <span class="font-mono text-slate-400">
+                                <span class="text-emerald-400 font-semibold">${data.wins}V</span> - <span class="text-rose-400 font-semibold">${data.losses}D</span>
+                            </span>
+                        </div>
+                    `).join('');
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                        <span class="text-xs font-bold text-brand-400 uppercase tracking-wide">Jornada ${index + 1} (${formattedDate})</span>
+                        <span class="text-[11px] font-mono bg-dark-800 text-slate-300 px-2 py-0.5 rounded-full">${matches.length} PJ</span>
+                    </div>
+                    <div class="space-y-1">
+                        ${statsHTML}
+                    </div>
+                `;
+                jornadasContainer.appendChild(card);
+            });
+        }
+
+        function initRegisterForm() {
+            const wPlayer = document.getElementById('winner-player');
+            const lPlayer = document.getElementById('loser-player');
+            const wTeam = document.getElementById('winner-team');
+            const lTeam = document.getElementById('loser-team');
+
+            wPlayer.innerHTML = '';
+            lPlayer.innerHTML = '';
+            wTeam.innerHTML = '';
+            lTeam.innerHTML = '';
+
+            appState.players.forEach(p => {
+                wPlayer.innerHTML += `<option value="${p}">${p}</option>`;
+                lPlayer.innerHTML += `<option value="${p}">${p}</option>`;
+            });
+
+            if (appState.players.length > 1) lPlayer.selectedIndex = 1;
+
+            nbaTeams.forEach(t => {
+                wTeam.innerHTML += `<option value="${t.code}">${t.name} (${t.code})</option>`;
+                lTeam.innerHTML += `<option value="${t.code}">${t.name} (${t.code})</option>`;
+            });
+
+            document.getElementById('match-date').value = new Date().toISOString().split('T')[0];
+
+            // Auto detectar equipo favorito para el ganador y el perdedor inicial
+            onPlayerSelectChange('winner');
+            onPlayerSelectChange('loser');
+        }
+
+        function updateTeamLogoPreview(type) {
+            const code = document.getElementById(`${type}-team`).value;
+            const preview = document.getElementById(`${type}-logo-preview`);
+            const team = nbaTeams.find(t => t.code === code);
+            if (team) {
+                preview.src = team.logo;
+                preview.classList.remove('hidden');
+            }
+        }
+
+        function handleRegisterMatch(e) {
+            e.preventDefault();
+            if (currentUserRole !== 'admin') {
+                showToast("Acceso denegado: Modo Invitado", "error");
+                return;
+            }
+
+            const winnerPlayer = document.getElementById('winner-player').value;
+            const loserPlayer = document.getElementById('loser-player').value;
+            const winnerTeam = document.getElementById('winner-team').value;
+            const loserTeam = document.getElementById('loser-team').value;
+            const date = document.getElementById('match-date').value;
+
+            if (winnerPlayer === loserPlayer) {
+                showToast("El ganador y el perdedor deben ser distintos", "error");
+                return;
+            }
+
+            const newMatch = {
+                id: 'm_' + Date.now(),
+                date,
+                winnerPlayer,
+                winnerTeam,
+                loserPlayer,
+                loserTeam
+            };
+
+            appState.matches.push(newMatch);
+            saveState();
+            showToast("Partido registrado y sincronizado en la nube");
+            switchTab('resumen');
+        }
+
+        function renderJugadores() {
+            const grid = document.getElementById('players-grid');
+            grid.innerHTML = '';
+            const stats = getPlayerStats();
+
+            stats.forEach(s => {
+                const sortedTeams = Object.entries(s.teamsUsed).sort((a, b) => b[1] - a[1]);
+
+                let teamsLogosHTML = sortedTeams.slice(0, 3).map(([code, count]) => {
+                    const tObj = nbaTeams.find(t => t.code === code) || { logo: '', name: code };
+                    return `
+                        <div class="flex items-center space-x-1.5 bg-dark-950 px-2.5 py-1 rounded-lg border border-slate-800 text-xs">
+                            <img src="${tObj.logo}" class="w-4 h-4 object-contain" alt="${code}">
+                            <span class="font-bold text-slate-300">${code}</span>
+                            <span class="text-slate-500 font-mono">(${count})</span>
+                        </div>
+                    `;
+                }).join('');
+
+                const card = document.createElement('div');
+                card.className = 'bg-dark-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl space-y-5 hover:border-brand-500/40 transition';
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-brand-600 to-indigo-600 text-white font-extrabold text-lg sm:text-xl flex items-center justify-center shadow-md">
+                                ${s.name.charAt(0)}
+                            </div>
+                            <div>
+                                <h3 class="text-base sm:text-lg font-bold text-white">${s.name}</h3>
+                                <p class="text-xs text-slate-400">Racha: <span class="font-bold ${s.currentStreakStr.includes('V') ? 'text-emerald-400' : 'text-rose-400'}">${s.currentStreakStr}</span></p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-brand-500/10 text-brand-400 border border-brand-500/20 rounded-full font-mono font-bold text-xs">${s.winRate}% V</span>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 bg-dark-950 p-3 rounded-xl border border-slate-800/80 text-center">
+                        <div>
+                            <p class="text-[10px] text-slate-400 uppercase font-semibold">Jugados</p>
+                            <p class="text-sm sm:text-base font-bold text-white font-mono mt-0.5">${s.played}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-400 uppercase font-semibold">Ganados</p>
+                            <p class="text-sm sm:text-base font-bold text-emerald-400 font-mono mt-0.5">${s.wins}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-400 uppercase font-semibold">Perdidos</p>
+                            <p class="text-sm sm:text-base font-bold text-rose-400 font-mono mt-0.5">${s.losses}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Equipos Más Usados</p>
+                        <div class="flex flex-wrap gap-2">
+                            ${teamsLogosHTML || '<span class="text-xs text-slate-500">Sin registros</span>'}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function openAddPlayerModal() {
+            if (currentUserRole !== 'admin') {
+                showToast("Acceso denegado: Modo Invitado", "error");
+                return;
+            }
+            document.getElementById('new-player-name').value = '';
+            document.getElementById('add-player-modal').classList.remove('hidden');
+        }
+
+        function closeAddPlayerModal() {
+            document.getElementById('add-player-modal').classList.add('hidden');
+        }
+
+        function handleAddPlayer(e) {
+            e.preventDefault();
+            if (currentUserRole !== 'admin') return;
+
+            const name = document.getElementById('new-player-name').value.trim();
+            if (!name) return;
+            if (appState.players.includes(name)) {
+                showToast("El jugador ya existe", "error");
+                return;
+            }
+            appState.players.push(name);
+            saveState();
+            closeAddPlayerModal();
+            renderJugadores();
+            showToast(`Jugador ${name} agregado con éxito`);
+        }
+
+        function initH2H() {
+            const p1 = document.getElementById('h2h-player1');
+            const p2 = document.getElementById('h2h-player2');
+
+            p1.innerHTML = '';
+            p2.innerHTML = '';
+
+            appState.players.forEach(p => {
+                p1.innerHTML += `<option value="${p}">${p}</option>`;
+                p2.innerHTML += `<option value="${p}">${p}</option>`;
+            });
+
+            if (appState.players.length > 1) p2.selectedIndex = 1;
+
+            updateH2H();
+        }
+
+        function updateH2H() {
+            const p1 = document.getElementById('h2h-player1').value;
+            const p2 = document.getElementById('h2h-player2').value;
+            const container = document.getElementById('h2h-results');
+
+            if (p1 === p2) {
+                container.innerHTML = `<p class="text-center text-xs text-rose-400 py-6">Selecciona dos jugadores diferentes para comparar.</p>`;
+                return;
+            }
+
+            const matches = appState.matches.filter(m => 
+                (m.winnerPlayer === p1 && m.loserPlayer === p2) || 
+                (m.winnerPlayer === p2 && m.loserPlayer === p1)
+            );
+
+            let p1Wins = 0;
+            let p2Wins = 0;
+
+            matches.forEach(m => {
+                if (m.winnerPlayer === p1) p1Wins++;
+                if (m.winnerPlayer === p2) p2Wins++;
+            });
+
+            const total = matches.length;
+            const p1Pct = total > 0 ? Math.round((p1Wins / total) * 100) : 0;
+            const p2Pct = total > 0 ? Math.round((p2Wins / total) * 100) : 0;
+
+            container.innerHTML = `
+                <div class="grid grid-cols-3 gap-2 sm:gap-4 items-center bg-dark-950 p-4 sm:p-6 rounded-2xl border border-slate-800 text-center">
+                    <div>
+                        <h3 class="text-sm sm:text-lg font-bold text-brand-400 truncate">${p1}</h3>
+                        <p class="text-2xl sm:text-3xl font-extrabold text-white font-mono mt-1">${p1Wins}</p>
+                        <p class="text-[10px] sm:text-xs text-slate-400 mt-0.5">${p1Pct}%</p>
+                    </div>
+                    <div>
+                        <span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-slate-400 bg-dark-800 px-2.5 py-1 rounded-full border border-slate-700">VS (${total} PJ)</span>
+                    </div>
+                    <div>
+                        <h3 class="text-sm sm:text-lg font-bold text-indigo-400 truncate">${p2}</h3>
+                        <p class="text-2xl sm:text-3xl font-extrabold text-white font-mono mt-1">${p2Wins}</p>
+                        <p class="text-[10px] sm:text-xs text-slate-400 mt-0.5">${p2Pct}%</p>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <div class="flex justify-between text-xs font-semibold text-slate-400">
+                        <span>${p1} (${p1Wins}V)</span>
+                        <span>${p2} (${p2Wins}V)</span>
+                    </div>
+                    <div class="w-full h-3 bg-dark-950 rounded-full overflow-hidden flex border border-slate-800">
+                        <div class="bg-brand-500 transition-all duration-500" style="width: ${p1Pct}%"></div>
+                        <div class="bg-indigo-500 transition-all duration-500" style="width: ${p2Pct}%"></div>
+                    </div>
+                </div>
+
+                <div class="space-y-3 pt-2">
+                    <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Historial Directo</h4>
+                    <div class="space-y-2 max-h-[260px] overflow-y-auto pr-1">
+                        ${matches.length === 0 ? '<p class="text-xs text-slate-500 text-center py-4">No hay enfrentamientos directos registrados.</p>' : 
+                            [...matches].reverse().map(m => {
+                                const wTeam = nbaTeams.find(t => t.code === m.winnerTeam) || { logo: '', name: m.winnerTeam };
+                                const lTeam = nbaTeams.find(t => t.code === m.loserTeam) || { logo: '', name: m.loserTeam };
+                                const isP1Winner = m.winnerPlayer === p1;
+
+                                return `
+                                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-xl bg-dark-950 border border-slate-800 text-xs gap-2">
+                                        <span class="text-slate-500 font-mono text-[10px] sm:text-xs">${m.date}</span>
+                                        <div class="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto justify-between sm:justify-start">
+                                            <div class="flex items-center space-x-1.5 ${isP1Winner ? 'text-emerald-400 font-bold' : 'text-slate-400'}">
+                                                <img src="${wTeam.logo}" class="w-4 h-4 object-contain">
+                                                <span>${m.winnerPlayer} (${m.winnerTeam})</span>
+                                            </div>
+                                            <span class="text-slate-600 font-bold">def</span>
+                                            <div class="flex items-center space-x-1.5 ${!isP1Winner ? 'text-emerald-400 font-bold' : 'text-slate-400'}">
+                                                <img src="${lTeam.logo}" class="w-4 h-4 object-contain">
+                                                <span>${m.loserPlayer} (${m.loserTeam})</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')
+                        }
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderHistorial() {
+            const tbody = document.getElementById('historial-table-body');
+            const search = document.getElementById('historial-search').value.toLowerCase();
+            const filterPlayer = document.getElementById('historial-filter-player').value;
+
+            const filterSelect = document.getElementById('historial-filter-player');
+            const currentFilterVal = filterSelect.value;
+            filterSelect.innerHTML = '<option value="Todos los jugadores">Todos los jugadores</option>';
+            appState.players.forEach(p => {
+                filterSelect.innerHTML += `<option value="${p}" ${p === currentFilterVal ? 'selected' : ''}>${p}</option>`;
+            });
+
+            tbody.innerHTML = '';
+            let matches = [...appState.matches].reverse();
+
+            if (filterPlayer && filterPlayer !== "Todos los jugadores") {
+                matches = matches.filter(m => m.winnerPlayer === filterPlayer || m.loserPlayer === filterPlayer);
+            }
+
+            if (search) {
+                matches = matches.filter(m => 
+                    m.winnerPlayer.toLowerCase().includes(search) || 
+                    m.loserPlayer.toLowerCase().includes(search) || 
+                    m.winnerTeam.toLowerCase().includes(search) || 
+                    m.loserTeam.toLowerCase().includes(search) || 
+                    m.date.includes(search)
+                );
+            }
+
+            if (matches.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-500">No hay partidos que coincidan con la búsqueda.</td></tr>`;
+                return;
+            }
+
+            matches.forEach((m, idx) => {
+                const wTeam = nbaTeams.find(t => t.code === m.winnerTeam) || { logo: '', name: m.winnerTeam };
+                const lTeam = nbaTeams.find(t => t.code === m.loserTeam) || { logo: '', name: m.loserTeam };
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-dark-800/40 transition';
+                tr.innerHTML = `
+                    <td class="py-3 px-3 font-mono text-slate-500 text-xs">${appState.matches.length - idx}</td>
+                    <td class="py-3 px-3 font-mono text-slate-400 text-xs">${m.date}</td>
+                    <td class="py-3 px-3 font-semibold text-emerald-400">
+                        <div class="flex items-center space-x-2">
+                            <img src="${wTeam.logo}" class="w-5 h-5 object-contain bg-dark-950 rounded p-0.5 border border-slate-800">
+                            <span>${m.winnerPlayer} <span class="text-xs text-slate-400 font-mono">(${m.winnerTeam})</span></span>
+                        </div>
+                    </td>
+                    <td class="py-3 px-3 text-rose-400">
+                        <div class="flex items-center space-x-2">
+                            <img src="${lTeam.logo}" class="w-5 h-5 object-contain bg-dark-950 rounded p-0.5 border border-slate-800">
+                            <span>${m.loserPlayer} <span class="text-xs text-slate-400 font-mono">(${m.loserTeam})</span></span>
+                        </div>
+                    </td>
+                    <td class="py-3 px-3 text-center admin-only">
+                        <div class="flex items-center justify-center space-x-1">
+                            <button onclick="openEditMatchModal('${m.id}')" class="p-1.5 text-slate-400 hover:text-brand-400 hover:bg-brand-500/10 rounded-lg transition active-touch" title="Editar registro">
+                                <i data-lucide="edit-3" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="deleteMatch('${m.id}')" class="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition active-touch" title="Eliminar registro">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            applyRolePermissions();
+            if (window.lucide) lucide.createIcons();
+        }
+
+        // --- FUNCIONES DE EDICIÓN ---
+        function openEditMatchModal(matchId) {
+            if (currentUserRole !== 'admin') {
+                showToast("Acceso denegado: Modo Invitado", "error");
+                return;
+            }
+
+            const match = appState.matches.find(m => m.id === matchId);
+            if (!match) return;
+
+            document.getElementById('edit-match-id').value = match.id;
+            document.getElementById('edit-match-date').value = match.date;
+
+            const editWPlayer = document.getElementById('edit-winner-player');
+            const editLPlayer = document.getElementById('edit-loser-player');
+            const editWTeam = document.getElementById('edit-winner-team');
+            const editLTeam = document.getElementById('edit-loser-team');
+
+            editWPlayer.innerHTML = '';
+            editLPlayer.innerHTML = '';
+            editWTeam.innerHTML = '';
+            editLTeam.innerHTML = '';
+
+            appState.players.forEach(p => {
+                editWPlayer.innerHTML += `<option value="${p}">${p}</option>`;
+                editLPlayer.innerHTML += `<option value="${p}">${p}</option>`;
+            });
+
+            nbaTeams.forEach(t => {
+                editWTeam.innerHTML += `<option value="${t.code}">${t.name} (${t.code})</option>`;
+                editLTeam.innerHTML += `<option value="${t.code}">${t.name} (${t.code})</option>`;
+            });
+
+            editWPlayer.value = match.winnerPlayer;
+            editLPlayer.value = match.loserPlayer;
+            editWTeam.value = match.winnerTeam;
+            editLTeam.value = match.loserTeam;
+
+            document.getElementById('edit-match-modal').classList.remove('hidden');
+        }
+
+        function closeEditMatchModal() {
+            document.getElementById('edit-match-modal').classList.add('hidden');
+        }
+
+        function handleSaveEditMatch(e) {
+            e.preventDefault();
+            if (currentUserRole !== 'admin') return;
+
+            const matchId = document.getElementById('edit-match-id').value;
+            const winnerPlayer = document.getElementById('edit-winner-player').value;
+            const loserPlayer = document.getElementById('edit-loser-player').value;
+            const winnerTeam = document.getElementById('edit-winner-team').value;
+            const loserTeam = document.getElementById('edit-loser-team').value;
+            const date = document.getElementById('edit-match-date').value;
+
+            if (winnerPlayer === loserPlayer) {
+                showToast("El ganador y el perdedor deben ser distintos", "error");
+                return;
+            }
+
+            const matchIndex = appState.matches.findIndex(m => m.id === matchId);
+            if (matchIndex !== -1) {
+                appState.matches[matchIndex] = {
+                    id: matchId,
+                    date,
+                    winnerPlayer,
+                    winnerTeam,
+                    loserPlayer,
+                    loserTeam
+                };
+                saveState();
+                closeEditMatchModal();
+                renderHistorial();
+                renderResumen();
+                showToast("Partido actualizado correctamente");
+            }
+        }
+
+        function deleteMatch(id) {
+            if (currentUserRole !== 'admin') {
+                showToast("Acceso denegado: Modo Invitado", "error");
+                return;
+            }
+
+            if (confirm("¿Estás seguro de eliminar este registro del historial?")) {
+                appState.matches = appState.matches.filter(m => m.id !== id);
+                saveState();
+                renderHistorial();
+                renderResumen();
+                showToast("Partido eliminado con éxito");
+            }
+        }
+
+        function initApp() {
+            checkSessionGate();
+        }
+
+        // --- CONEXIÓN A FIREBASE ---
+        let db;
+        let cargandoDesdeNube = false;
+
+        window.onload = function() {
+            try {
+                const firebaseConfig = {
+                    apiKey: "AIzaSyD3fu_ycQc0wAPCgDRKdXzY4cX_Jq_vwCE",
+                    authDomain: "k27-scores.firebaseapp.com",
+                    databaseURL: "https://k27-scores-default-rtdb.firebaseio.com",
+                    projectId: "k27-scores",
+                    storageBucket: "k27-scores.firebasestorage.app",
+                    messagingSenderId: "663402619865",
+                    appId: "1:663402619865:web:2f78f2cca0bac17ab32fc8",
+                    measurementId: "G-DFWVLVF976"
+                };
+
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.database();
+
+                db.ref('appState').on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        cargandoDesdeNube = true;
+                        appState = data;
+                        saveStateOriginal();
+                        initApp();
+                        cargandoDesdeNube = false;
+                    } else {
+                        db.ref('appState').set(appState);
+                        initApp();
+                    }
+                });
+            } catch (e) {
+                console.error("Error al conectar con Firebase:", e);
+                initApp();
+            }
+        };
+    </script>
+</body>
+</html>
