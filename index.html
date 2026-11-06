@@ -65,9 +65,7 @@
             </div>
 
             <!-- Contenedor dinámico de Acceso -->
-            <div id="login-form-container" class="space-y-4 text-left">
-                <!-- Se llena dinámicamente según si ya existe usuario o no -->
-            </div>
+            <div id="login-form-container" class="space-y-4 text-left"></div>
 
         </div>
     </div>
@@ -124,6 +122,10 @@
                         <i data-lucide="history" class="w-4 h-4"></i>
                         <span>Historial</span>
                     </button>
+                    <button onclick="switchTab('temporadas')" id="tab-btn-temporadas" class="tab-btn flex items-center space-x-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap bg-dark-800 text-slate-400 hover:bg-dark-700 hover:text-white">
+                        <i data-lucide="archive" class="w-4 h-4"></i>
+                        <span>Temporadas</span>
+                    </button>
                 </div>
             </div>
         </header>
@@ -176,13 +178,16 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 bg-dark-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl">
-                        <div class="flex items-center justify-between mb-4">
+                    <div class="lg:col-span-2 bg-dark-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                             <h2 class="text-sm sm:text-base font-bold text-white flex items-center space-x-2">
                                 <i data-lucide="medal" class="w-5 h-5 text-brand-400"></i>
-                                <span>Tabla General de Posiciones</span>
+                                <span>Tabla General (Temporada Actual)</span>
                             </h2>
-                            <span class="text-[11px] text-slate-400">Por % Vict.</span>
+                            <button onclick="closeCurrentSeason()" class="admin-only bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-xl font-semibold text-xs transition flex items-center space-x-1.5 shadow-md active-touch">
+                                <i data-lucide="archive" class="w-3.5 h-3.5"></i>
+                                <span>Cerrar Temporada</span>
+                            </button>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
@@ -365,30 +370,48 @@
                 </div>
             </div>
 
+            <!-- TAB 6: TEMPORADAS PASADAS -->
+            <div id="tab-temporadas" class="tab-content hidden space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-dark-900 border border-slate-800 p-5 sm:p-6 rounded-2xl shadow-xl">
+                    <div>
+                        <h2 class="text-base sm:text-lg font-bold text-white flex items-center space-x-2">
+                            <i data-lucide="archive" class="w-5 h-5 text-brand-400"></i>
+                            <span>Temporadas y Meses Archivados</span>
+                        </h2>
+                        <p class="text-xs text-slate-400">Historial de campeones y estadísticas de temporadas pasadas</p>
+                    </div>
+                </div>
+                <div id="temporadas-container" class="space-y-6"></div>
+            </div>
+
         </main>
 
         <!-- Mobile Bottom Navigation Bar -->
-        <nav class="sm:hidden fixed bottom-0 left-0 right-0 bg-dark-900/95 backdrop-blur-lg border-t border-slate-800/80 z-40 px-2 py-2 pb-safe">
-            <div class="grid grid-cols-5 gap-1 text-center">
+        <nav class="sm:hidden fixed bottom-0 left-0 right-0 bg-dark-900/95 backdrop-blur-lg border-t border-slate-800/80 z-40 px-1.5 py-2 pb-safe">
+            <div class="grid grid-cols-6 gap-0.5 text-center">
                 <button onclick="switchTab('resumen')" id="mob-tab-btn-resumen" class="mob-tab-btn flex flex-col items-center py-1 rounded-xl text-brand-400 active-touch">
-                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                    <span class="text-[10px] font-medium mt-0.5">Resumen</span>
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                    <span class="text-[9px] font-medium mt-0.5">Resumen</span>
                 </button>
                 <button onclick="switchTab('registrar')" id="mob-tab-btn-registrar" class="mob-tab-btn admin-only flex flex-col items-center py-1 rounded-xl text-slate-400 active-touch">
-                    <i data-lucide="plus-circle" class="w-5 h-5"></i>
-                    <span class="text-[10px] font-medium mt-0.5">Nuevo</span>
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <span class="text-[9px] font-medium mt-0.5">Nuevo</span>
                 </button>
                 <button onclick="switchTab('jugadores')" id="mob-tab-btn-jugadores" class="mob-tab-btn flex flex-col items-center py-1 rounded-xl text-slate-400 active-touch">
-                    <i data-lucide="users" class="w-5 h-5"></i>
-                    <span class="text-[10px] font-medium mt-0.5">Jugadores</span>
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                    <span class="text-[9px] font-medium mt-0.5">Players</span>
                 </button>
                 <button onclick="switchTab('caracara')" id="mob-tab-btn-caracara" class="mob-tab-btn flex flex-col items-center py-1 rounded-xl text-slate-400 active-touch">
-                    <i data-lucide="swords" class="w-5 h-5"></i>
-                    <span class="text-[10px] font-medium mt-0.5">VS</span>
+                    <i data-lucide="swords" class="w-4 h-4"></i>
+                    <span class="text-[9px] font-medium mt-0.5">VS</span>
                 </button>
                 <button onclick="switchTab('historial')" id="mob-tab-btn-historial" class="mob-tab-btn flex flex-col items-center py-1 rounded-xl text-slate-400 active-touch">
-                    <i data-lucide="history" class="w-5 h-5"></i>
-                    <span class="text-[10px] font-medium mt-0.5">Historial</span>
+                    <i data-lucide="history" class="w-4 h-4"></i>
+                    <span class="text-[9px] font-medium mt-0.5">Historial</span>
+                </button>
+                <button onclick="switchTab('temporadas')" id="mob-tab-btn-temporadas" class="mob-tab-btn flex flex-col items-center py-1 rounded-xl text-slate-400 active-touch">
+                    <i data-lucide="archive" class="w-4 h-4"></i>
+                    <span class="text-[9px] font-medium mt-0.5">Temporadas</span>
                 </button>
             </div>
         </nav>
@@ -701,10 +724,11 @@
             }
         }
 
-        // Estado Global
+        // Estado Global con Soporte de Temporadas Archivadas
         let appState = JSON.parse(localStorage.getItem('nba2k_excel_app_state')) || {
             players: ["Joel", "Aaron", "Jheremy"],
-            matches: []
+            matches: [],
+            seasons: [] // Array para guardar temporadas cerradas
         };
 
         function saveStateOriginal() {
@@ -773,18 +797,19 @@
             if (tabId === 'jugadores') renderJugadores();
             if (tabId === 'caracara') initH2H();
             if (tabId === 'historial') renderHistorial();
+            if (tabId === 'temporadas') renderTemporadas();
 
             if (window.lucide) lucide.createIcons();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function getPlayerStats() {
+        function getPlayerStatsForMatches(matchesList, playersList) {
             const stats = {};
-            appState.players.forEach(p => {
+            playersList.forEach(p => {
                 stats[p] = { name: p, played: 0, wins: 0, losses: 0, winRate: 0, teamsUsed: {}, streak: [] };
             });
 
-            const sortedMatches = [...appState.matches].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const sortedMatches = [...matchesList].sort((a, b) => new Date(a.date) - new Date(b.date));
 
             sortedMatches.forEach(m => {
                 if (stats[m.winnerPlayer]) {
@@ -822,7 +847,147 @@
             return Object.values(stats).sort((a, b) => b.wins - a.wins || b.winRate - a.winRate);
         }
 
-        // Función para obtener el equipo más usado por un jugador en victorias o derrotas
+        function getPlayerStats() {
+            return getPlayerStatsForMatches(appState.matches, appState.players);
+        }
+
+        // Función para cerrar la temporada actual y archivarla
+        function closeCurrentSeason() {
+            if (currentUserRole !== 'admin') {
+                showToast("Acceso denegado: Solo el Administrador puede cerrar temporadas", "error");
+                return;
+            }
+            if (appState.matches.length === 0) {
+                showToast("No hay partidos en la temporada actual para cerrar", "error");
+                return;
+            }
+
+            const defaultName = "Temporada " + new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+            const seasonName = prompt("Ingresa el nombre o mes para esta temporada que cierras:", defaultName);
+            if (!seasonName) return;
+
+            const finalStandings = getPlayerStats();
+            const champion = finalStandings.length > 0 ? finalStandings[0] : null;
+
+            const closedSeason = {
+                id: 'season_' + Date.now(),
+                name: seasonName,
+                closedDate: new Date().toLocaleDateString('es-ES'),
+                matches: [...appState.matches],
+                standings: finalStandings,
+                champion: champion ? champion.name : 'N/A'
+            };
+
+            if (!appState.seasons) appState.seasons = [];
+            appState.seasons.push(closedSeason);
+            appState.matches = []; // Reiniciar partidos a 0 para la nueva temporada
+
+            saveState();
+            showToast(`¡Temporada "${seasonName}" cerrada y archivada con éxito!`);
+            switchTab('temporadas');
+        }
+
+        function renderTemporadas() {
+            const container = document.getElementById('temporadas-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const seasons = appState.seasons || [];
+
+            if (seasons.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-dark-900 border border-slate-800 rounded-2xl p-8 text-center space-y-3 shadow-xl">
+                        <div class="w-14 h-14 bg-brand-500/10 text-brand-400 rounded-2xl flex items-center justify-center mx-auto">
+                            <i data-lucide="archive" class="w-7 h-7"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-white">No hay temporadas cerradas aún</h3>
+                        <p class="text-xs text-slate-400 max-w-sm mx-auto">Cuando hagas clic en "Cerrar Temporada" en el panel de resumen, todos los resultados y estadísticas se guardarán aquí y la nueva etapa empezará desde 0.</p>
+                    </div>
+                `;
+                if (window.lucide) lucide.createIcons();
+                return;
+            }
+
+            [...seasons].reverse().forEach((season) => {
+                const champion = season.standings && season.standings.length > 0 ? season.standings[0] : null;
+
+                let standingsHTML = season.standings.map((s, idx) => `
+                    <tr class="border-b border-slate-800/40">
+                        <td class="py-2.5 px-3 font-bold text-slate-500">#${idx + 1}</td>
+                        <td class="py-2.5 px-3 font-bold text-white">${s.name}</td>
+                        <td class="py-2.5 px-3 text-center font-mono text-slate-300">${s.played}</td>
+                        <td class="py-2.5 px-3 text-center font-mono text-emerald-400">${s.wins}</td>
+                        <td class="py-2.5 px-3 text-center font-mono text-rose-400">${s.losses}</td>
+                        <td class="py-2.5 px-3 text-right font-mono font-bold text-white">${s.winRate}%</td>
+                    </tr>
+                `).join('');
+
+                const card = document.createElement('div');
+                card.className = 'bg-dark-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl space-y-4';
+                card.innerHTML = `
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-slate-800">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-3 bg-brand-500/10 text-brand-400 rounded-xl">
+                                <i data-lucide="trophy" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base sm:text-lg font-bold text-white">${season.name}</h3>
+                                <p class="text-xs text-slate-400">Cerrada el ${season.closedDate} • Total partidos: <span class="font-mono text-white">${season.matches.length}</span></p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-end">
+                            ${champion ? `
+                                <div class="bg-amber-500/10 border border-amber-500/30 px-3 py-1.5 rounded-xl flex items-center space-x-2">
+                                    <i data-lucide="award" class="w-4 h-4 text-amber-400"></i>
+                                    <span class="text-xs font-bold text-amber-300">Campeón: ${champion.name} (${champion.wins}V - ${champion.losses}D)</span>
+                                </div>
+                            ` : ''}
+                            <button onclick="deleteSeason('${season.id}')" class="admin-only p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition" title="Eliminar temporada archivada">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Tabla Final de Posiciones</h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="border-b border-slate-800 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                                        <th class="py-2 px-3">Pos</th>
+                                        <th class="py-2 px-3">Jugador</th>
+                                        <th class="py-2 px-3 text-center">PJ</th>
+                                        <th class="py-2 px-3 text-center">PG</th>
+                                        <th class="py-2 px-3 text-center">PP</th>
+                                        <th class="py-2 px-3 text-right">% Vict.</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-800/40">
+                                    ${standingsHTML}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            applyRolePermissions();
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function deleteSeason(seasonId) {
+            if (currentUserRole !== 'admin') {
+                showToast("Acceso denegado: Modo Invitado", "error");
+                return;
+            }
+            if (confirm("¿Estás seguro de eliminar esta temporada archivada?")) {
+                appState.seasons = appState.seasons.filter(s => s.id !== seasonId);
+                saveState();
+                renderTemporadas();
+                showToast("Temporada eliminada con éxito");
+            }
+        }
+
         function getMostUsedTeamForPlayer(playerName, isWinner) {
             const teamCounts = {};
             appState.matches.forEach(m => {
@@ -842,7 +1007,6 @@
                 }
             });
 
-            // Si no tiene registros específicos en V/D, buscar su equipo más usado general
             if (!mostUsed) {
                 appState.matches.forEach(m => {
                     if (m.winnerPlayer === playerName) teamCounts[m.winnerTeam] = (teamCounts[m.winnerTeam] || 0) + 1;
@@ -913,7 +1077,7 @@
             const dates = Object.keys(dateGroups).sort();
 
             if (dates.length === 0) {
-                jornadasContainer.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">No hay jornadas registradas aún.</p>`;
+                jornadasContainer.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">No hay jornadas registradas aún en esta temporada.</p>`;
                 return;
             }
 
@@ -954,6 +1118,8 @@
                 `;
                 jornadasContainer.appendChild(card);
             });
+            applyRolePermissions();
+            if (window.lucide) lucide.createIcons();
         }
 
         function initRegisterForm() {
@@ -981,7 +1147,6 @@
 
             document.getElementById('match-date').value = new Date().toISOString().split('T')[0];
 
-            // Auto detectar equipo favorito para el ganador y el perdedor inicial
             onPlayerSelectChange('winner');
             onPlayerSelectChange('loser');
         }
@@ -1420,6 +1585,7 @@
                     if (data) {
                         cargandoDesdeNube = true;
                         appState = data;
+                        if (!appState.seasons) appState.seasons = [];
                         saveStateOriginal();
                         initApp();
                         cargandoDesdeNube = false;
