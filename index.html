@@ -182,7 +182,7 @@
                         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                             <h2 class="text-sm sm:text-base font-bold text-white flex items-center space-x-2">
                                 <i data-lucide="medal" class="w-5 h-5 text-brand-400"></i>
-                                <span>Tabla General (Temporada Actual)</span>
+                                <span>Tabla General (Ordenada por % Vict.)</span>
                             </h2>
                             <button onclick="closeCurrentSeason()" class="admin-only bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-xl font-semibold text-xs transition flex items-center space-x-1.5 shadow-md active-touch">
                                 <i data-lucide="archive" class="w-3.5 h-3.5"></i>
@@ -728,7 +728,7 @@
         let appState = JSON.parse(localStorage.getItem('nba2k_excel_app_state')) || {
             players: ["Joel", "Aaron", "Jheremy"],
             matches: [],
-            seasons: [] // Array para guardar temporadas cerradas
+            seasons: []
         };
 
         function saveStateOriginal() {
@@ -803,6 +803,9 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        // =========================================================================
+        // ALGORITMO CORREGIDO: ORDENA PRIMERO POR PORCENTAJE DE VICTORIA (% VICT.)
+        // =========================================================================
         function getPlayerStatsForMatches(matchesList, playersList) {
             const stats = {};
             playersList.forEach(p => {
@@ -827,7 +830,7 @@
             });
 
             Object.values(stats).forEach(s => {
-                s.winRate = s.played > 0 ? ((s.wins / s.played) * 100).toFixed(1) : 0;
+                s.winRate = s.played > 0 ? parseFloat(((s.wins / s.played) * 100).toFixed(1)) : 0;
                 
                 let currentStreakType = null;
                 let streakCount = 0;
@@ -844,14 +847,19 @@
                 s.currentStreakStr = streakCount > 0 ? `${streakCount}${currentStreakType === 'W' ? 'V' : 'D'}` : '—';
             });
 
-            return Object.values(stats).sort((a, b) => b.wins - a.wins || b.winRate - a.winRate);
+            // ORDEN PRINCIPAL: Mayor % de victoria -> Mayor victorias totales -> Menor partidos jugados
+            return Object.values(stats).sort((a, b) => {
+                if (b.winRate !== a.winRate) return b.winRate - a.winRate;
+                if (b.wins !== a.wins) return b.wins - a.wins;
+                return a.played - b.played;
+            });
         }
 
         function getPlayerStats() {
             return getPlayerStatsForMatches(appState.matches, appState.players);
         }
 
-        // Función para cerrar la temporada actual y archivarla
+        // Cierre de Temporada con la clasificación recalculada correctamente
         function closeCurrentSeason() {
             if (currentUserRole !== 'admin') {
                 showToast("Acceso denegado: Solo el Administrador puede cerrar temporadas", "error");
@@ -879,15 +887,33 @@
             };
 
             if (!appState.seasons) appState.seasons = [];
+            
+            // Si ya existe una temporada previa archivada, actualizar su clasificación
             appState.seasons.push(closedSeason);
-            appState.matches = []; // Reiniciar partidos a 0 para la nueva temporada
+            appState.matches = []; // Reiniciar partidos a 0
 
             saveState();
-            showToast(`¡Temporada "${seasonName}" cerrada y archivada con éxito!`);
+            showToast(`¡Temporada "${seasonName}" archivada correctamente con ${champion.name} como Campeón!`);
             switchTab('temporadas');
         }
 
+        // Recalcular y corregir temporadas archivadas previamente
+        function fixArchivedSeasons() {
+            if (!appState.seasons) return;
+            let updated = false;
+            appState.seasons.forEach(season => {
+                if (season.matches && season.matches.length > 0) {
+                    const recalculated = getPlayerStatsForMatches(season.matches, appState.players);
+                    season.standings = recalculated;
+                    season.champion = recalculated.length > 0 ? recalculated[0].name : 'N/A';
+                    updated = true;
+                }
+            });
+            if (updated) saveStateOriginal();
+        }
+
         function renderTemporadas() {
+            fixArchivedSeasons();
             const container = document.getElementById('temporadas-container');
             if (!container) return;
             container.innerHTML = '';
@@ -913,12 +939,15 @@
 
                 let standingsHTML = season.standings.map((s, idx) => `
                     <tr class="border-b border-slate-800/40">
-                        <td class="py-2.5 px-3 font-bold text-slate-500">#${idx + 1}</td>
-                        <td class="py-2.5 px-3 font-bold text-white">${s.name}</td>
+                        <td class="py-2.5 px-3 font-bold ${idx === 0 ? 'text-amber-400' : 'text-slate-500'}">#${idx + 1}</td>
+                        <td class="py-2.5 px-3 font-bold text-white flex items-center space-x-1.5">
+                            <span>${s.name}</span>
+                            ${idx === 0 ? '<span class="text-xs">👑</span>' : ''}
+                        </td>
                         <td class="py-2.5 px-3 text-center font-mono text-slate-300">${s.played}</td>
-                        <td class="py-2.5 px-3 text-center font-mono text-emerald-400">${s.wins}</td>
-                        <td class="py-2.5 px-3 text-center font-mono text-rose-400">${s.losses}</td>
-                        <td class="py-2.5 px-3 text-right font-mono font-bold text-white">${s.winRate}%</td>
+                        <td class="py-2.5 px-3 text-center font-mono text-emerald-400 font-semibold">${s.wins}</td>
+                        <td class="py-2.5 px-3 text-center font-mono text-rose-400 font-semibold">${s.losses}</td>
+                        <td class="py-2.5 px-3 text-right font-mono font-bold ${idx === 0 ? 'text-amber-400' : 'text-white'}">${s.winRate}%</td>
                     </tr>
                 `).join('');
 
@@ -937,9 +966,9 @@
                         </div>
                         <div class="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-end">
                             ${champion ? `
-                                <div class="bg-amber-500/10 border border-amber-500/30 px-3 py-1.5 rounded-xl flex items-center space-x-2">
+                                <div class="bg-amber-500/10 border border-amber-500/30 px-3.5 py-1.5 rounded-xl flex items-center space-x-2">
                                     <i data-lucide="award" class="w-4 h-4 text-amber-400"></i>
-                                    <span class="text-xs font-bold text-amber-300">Campeón: ${champion.name} (${champion.wins}V - ${champion.losses}D)</span>
+                                    <span class="text-xs font-bold text-amber-300">Campeón: ${champion.name} (${champion.winRate}% V • ${champion.wins}V - ${champion.losses}D)</span>
                                 </div>
                             ` : ''}
                             <button onclick="deleteSeason('${season.id}')" class="admin-only p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition" title="Eliminar temporada archivada">
@@ -1040,9 +1069,8 @@
             document.getElementById('kpi-total-players').textContent = appState.players.length;
 
             if (stats.length > 0) {
-                const bestByPct = [...stats].sort((a, b) => b.winRate - a.winRate)[0];
-                document.getElementById('kpi-best-winrate').textContent = `${bestByPct.winRate}% (${bestByPct.name})`;
-                document.getElementById('kpi-current-leader').textContent = `${stats[0].name} (${stats[0].wins}V)`;
+                document.getElementById('kpi-best-winrate').textContent = `${stats[0].winRate}% (${stats[0].name})`;
+                document.getElementById('kpi-current-leader').textContent = `${stats[0].name} (${stats[0].winRate}%)`;
             }
 
             const tbody = document.getElementById('standings-table-body');
@@ -1051,16 +1079,17 @@
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-dark-800/40 transition';
                 tr.innerHTML = `
-                    <td class="py-3 px-2 sm:px-4 font-bold text-slate-500">#${idx + 1}</td>
+                    <td class="py-3 px-2 sm:px-4 font-bold ${idx === 0 ? 'text-amber-400' : 'text-slate-500'}">#${idx + 1}</td>
                     <td class="py-3 px-2 sm:px-4 font-bold text-white flex items-center space-x-2">
                         <div class="w-6 h-6 rounded-md bg-brand-500/20 text-brand-400 flex items-center justify-center text-xs">${s.name.charAt(0)}</div>
                         <span>${s.name}</span>
+                        ${idx === 0 ? '<span class="text-xs">👑</span>' : ''}
                     </td>
                     <td class="py-3 px-2 sm:px-4 text-center font-mono text-slate-300">${s.played}</td>
                     <td class="py-3 px-2 sm:px-4 text-center font-mono text-emerald-400 font-semibold">${s.wins}</td>
                     <td class="py-3 px-2 sm:px-4 text-center font-mono text-rose-400 font-semibold">${s.losses}</td>
                     <td class="py-3 px-2 sm:px-4 text-center font-mono font-semibold ${s.currentStreakStr.includes('V') ? 'text-emerald-400' : 'text-rose-400'}">${s.currentStreakStr}</td>
-                    <td class="py-3 px-2 sm:px-4 text-right font-mono font-bold text-white">${s.winRate}%</td>
+                    <td class="py-3 px-2 sm:px-4 text-right font-mono font-bold ${idx === 0 ? 'text-amber-400' : 'text-white'}">${s.winRate}%</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -1560,7 +1589,7 @@
             checkSessionGate();
         }
 
-        // --- CONEXIÓN A FIREBASE ---
+        // --- CONEXIÓN A FIREBASE Y AUTO-CORRECCIÓN ---
         let db;
         let cargandoDesdeNube = false;
 
@@ -1586,6 +1615,7 @@
                         cargandoDesdeNube = true;
                         appState = data;
                         if (!appState.seasons) appState.seasons = [];
+                        fixArchivedSeasons();
                         saveStateOriginal();
                         initApp();
                         cargandoDesdeNube = false;
