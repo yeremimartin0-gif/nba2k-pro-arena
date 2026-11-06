@@ -803,9 +803,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // =========================================================================
-        // ALGORITMO CORREGIDO: ORDENA PRIMERO POR PORCENTAJE DE VICTORIA (% VICT.)
-        // =========================================================================
         function getPlayerStatsForMatches(matchesList, playersList) {
             const stats = {};
             playersList.forEach(p => {
@@ -859,7 +856,6 @@
             return getPlayerStatsForMatches(appState.matches, appState.players);
         }
 
-        // Cierre de Temporada con la clasificación recalculada correctamente
         function closeCurrentSeason() {
             if (currentUserRole !== 'admin') {
                 showToast("Acceso denegado: Solo el Administrador puede cerrar temporadas", "error");
@@ -887,29 +883,35 @@
             };
 
             if (!appState.seasons) appState.seasons = [];
-            
-            // Si ya existe una temporada previa archivada, actualizar su clasificación
             appState.seasons.push(closedSeason);
-            appState.matches = []; // Reiniciar partidos a 0
+            appState.matches = [];
 
             saveState();
             showToast(`¡Temporada "${seasonName}" archivada correctamente con ${champion.name} como Campeón!`);
             switchTab('temporadas');
         }
 
-        // Recalcular y corregir temporadas archivadas previamente
+        // Recalcular y sincronizar temporadas archivadas en Firebase y LocalStorage
         function fixArchivedSeasons() {
             if (!appState.seasons) return;
             let updated = false;
             appState.seasons.forEach(season => {
                 if (season.matches && season.matches.length > 0) {
                     const recalculated = getPlayerStatsForMatches(season.matches, appState.players);
-                    season.standings = recalculated;
-                    season.champion = recalculated.length > 0 ? recalculated[0].name : 'N/A';
-                    updated = true;
+                    const realChamp = recalculated.length > 0 ? recalculated[0].name : 'N/A';
+                    if (season.champion !== realChamp || JSON.stringify(season.standings) !== JSON.stringify(recalculated)) {
+                        season.standings = recalculated;
+                        season.champion = realChamp;
+                        updated = true;
+                    }
                 }
             });
-            if (updated) saveStateOriginal();
+            if (updated) {
+                saveStateOriginal();
+                if (typeof db !== 'undefined' && !cargandoDesdeNube) {
+                    db.ref('appState').set(appState).catch(err => console.error(err));
+                }
+            }
         }
 
         function renderTemporadas() {
