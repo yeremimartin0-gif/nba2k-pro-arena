@@ -231,7 +231,7 @@
                         </div>
                         <div>
                             <h2 class="text-base sm:text-lg font-bold text-white">Registrar Nuevo Partido</h2>
-                            <p class="text-xs text-slate-400">Ingresa los puntos del marcador (detector de palizas >15 pts)</p>
+                            <p class="text-xs text-slate-400">Ingresa los marcadores (detecta paliza si >15 pts de ventaja)</p>
                         </div>
                     </div>
 
@@ -251,7 +251,7 @@
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-slate-300 mb-1">Puntos</label>
-                                    <input type="number" id="winner-score" required min="1" placeholder="Ej. 101" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500 transition font-mono">
+                                    <input type="number" id="winner-score" required min="1" placeholder="Puntos" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500 transition font-mono">
                                 </div>
                             </div>
                             <div>
@@ -275,7 +275,7 @@
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-slate-300 mb-1">Puntos</label>
-                                    <input type="number" id="loser-score" required min="0" placeholder="Ej. 90" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-rose-500 transition font-mono">
+                                    <input type="number" id="loser-score" required min="0" placeholder="Puntos" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-rose-500 transition font-mono">
                                 </div>
                             </div>
                             <div>
@@ -453,7 +453,7 @@
                     </div>
                     <div>
                         <label class="block text-[11px] font-medium text-emerald-400 mb-1">Puntos Ganador</label>
-                        <input type="number" id="edit-winner-score" required min="1" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition font-mono">
+                        <input type="number" id="edit-winner-score" required min="1" placeholder="Puntos" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition font-mono">
                     </div>
                     <div class="sm:col-span-2">
                         <label class="block text-[11px] font-medium text-emerald-400 mb-1">Equipo Ganador</label>
@@ -467,7 +467,7 @@
                     </div>
                     <div>
                         <label class="block text-[11px] font-medium text-rose-400 mb-1">Puntos Perdedor</label>
-                        <input type="number" id="edit-loser-score" required min="0" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500 transition font-mono">
+                        <input type="number" id="edit-loser-score" required min="0" placeholder="Puntos" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500 transition font-mono">
                     </div>
                     <div class="sm:col-span-2">
                         <label class="block text-[11px] font-medium text-rose-400 mb-1">Equipo Perdedor</label>
@@ -1222,8 +1222,8 @@
             const loserPlayer = document.getElementById('loser-player').value;
             const winnerTeam = document.getElementById('winner-team').value;
             const loserTeam = document.getElementById('loser-team').value;
-            const winnerScore = parseInt(document.getElementById('winner-score').value) || 0;
-            const loserScore = parseInt(document.getElementById('loser-score').value) || 0;
+            const winnerScoreRaw = document.getElementById('winner-score').value;
+            const loserScoreRaw = document.getElementById('loser-score').value;
             const date = document.getElementById('match-date').value;
 
             if (winnerPlayer === loserPlayer) {
@@ -1231,8 +1231,16 @@
                 return;
             }
 
+            if (winnerScoreRaw === '' || loserScoreRaw === '') {
+                showToast("Ingresa los puntos de ambos jugadores", "error");
+                return;
+            }
+
+            const winnerScore = parseInt(winnerScoreRaw, 10);
+            const loserScore = parseInt(loserScoreRaw, 10);
+
             if (winnerScore <= loserScore) {
-                showToast("El puntaje del ganador debe ser mayor al del perdedor", "error");
+                showToast("Los puntos del ganador deben ser mayores que los del perdedor", "error");
                 return;
             }
 
@@ -1600,8 +1608,8 @@
             const loserPlayer = document.getElementById('edit-loser-player').value;
             const winnerTeam = document.getElementById('edit-winner-team').value;
             const loserTeam = document.getElementById('edit-loser-team').value;
-            const winnerScore = parseInt(document.getElementById('edit-winner-score').value) || 0;
-            const loserScore = parseInt(document.getElementById('edit-loser-score').value) || 0;
+            const winnerScoreRaw = document.getElementById('edit-winner-score').value;
+            const loserScoreRaw = document.getElementById('edit-loser-score').value;
             const date = document.getElementById('edit-match-date').value;
 
             if (winnerPlayer === loserPlayer) {
@@ -1609,8 +1617,16 @@
                 return;
             }
 
+            if (winnerScoreRaw === '' || loserScoreRaw === '') {
+                showToast("Ingresa los puntos de ambos jugadores", "error");
+                return;
+            }
+
+            const winnerScore = parseInt(winnerScoreRaw, 10);
+            const loserScore = parseInt(loserScoreRaw, 10);
+
             if (winnerScore <= loserScore) {
-                showToast("El puntaje del ganador debe ser mayor al del perdedor", "error");
+                showToast("Los puntos del ganador deben ser mayores que los del perdedor", "error");
                 return;
             }
 
