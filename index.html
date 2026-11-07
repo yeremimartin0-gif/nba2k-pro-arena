@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="NBA 2K Pro">
-    <title>NBA 2K Pro Arena - Realtime Dashboard</title>
+    <title>NBA 2K Pro Arena - Local Edition</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -39,7 +39,7 @@
     
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #060810; -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; }
-        input, select, textarea { font-size: 16px !important; } /* Previene zoom automático en iOS */
+        input, select, textarea { font-size: 16px !important; }
         @media (min-width: 640px) { input, select, textarea { font-size: 0.875rem !important; } }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #0d111d; }
@@ -55,7 +55,6 @@
     <div id="login-gate" class="fixed inset-0 z-50 bg-dark-950 flex items-center justify-center p-4">
         <div class="w-full max-w-md bg-dark-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 text-center">
             
-            <!-- Logo App -->
             <div class="flex flex-col items-center space-y-3">
                 <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center shadow-xl shadow-brand-600/30">
                     <i data-lucide="trophy" class="w-8 h-8 text-white"></i>
@@ -66,7 +65,6 @@
                 </div>
             </div>
 
-            <!-- Contenedor dinámico de Acceso -->
             <div id="login-form-container" class="space-y-4 text-left"></div>
 
         </div>
@@ -75,22 +73,19 @@
     <!-- ================= APP DASHBOARD MAIN CONTENT ================= -->
     <div id="app-content" class="hidden flex-col min-h-screen">
         
-        <!-- Header & Navigation -->
         <header class="bg-dark-900/90 backdrop-blur-md border-b border-slate-800/80 sticky top-0 z-40">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-16">
-                    <!-- App Brand -->
                     <div class="flex items-center space-x-3">
                         <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-brand-600/30">
                             <i data-lucide="trophy" class="w-5 h-5 text-white"></i>
                         </div>
                         <div>
                             <h1 class="text-base font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-purple-300 bg-clip-text text-transparent">NBA 2K Pro Arena</h1>
-                            <p class="text-[11px] text-slate-400">iOS, Android & PC Web Sync</p>
+                            <p class="text-[11px] text-slate-400">Local Storage Edition</p>
                         </div>
                     </div>
 
-                    <!-- User Profile Badge & Logout -->
                     <div class="flex items-center space-x-2 sm:space-x-3">
                         <div class="flex items-center space-x-2 bg-dark-800 px-3 py-1.5 rounded-xl border border-slate-700">
                             <div id="user-avatar" class="w-6 h-6 rounded-lg bg-brand-600 text-white flex items-center justify-center font-bold text-xs">J</div>
@@ -102,7 +97,6 @@
                     </div>
                 </div>
 
-                <!-- Desktop Header Tabs -->
                 <div class="hidden sm:flex space-x-2 overflow-x-auto py-2.5 scrollbar-none border-t border-slate-800/40">
                     <button onclick="switchTab('resumen')" id="tab-btn-resumen" class="tab-btn flex items-center space-x-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition whitespace-nowrap bg-brand-600 text-white shadow-lg shadow-brand-600/25">
                         <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
@@ -132,7 +126,6 @@
             </div>
         </header>
 
-        <!-- Main Container -->
         <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-20 sm:pb-6">
 
             <!-- TAB 1: RESUMEN -->
@@ -215,7 +208,7 @@
                                 <i data-lucide="calendar" class="w-5 h-5 text-indigo-400"></i>
                                 <span>Resumen por Jornadas</span>
                             </h2>
-                            <span class="text-[11px] text-slate-400">Cloud Sync</span>
+                            <span class="text-[11px] text-slate-400">Local Mode</span>
                         </div>
                         <div id="jornadas-container" class="space-y-3 overflow-y-auto max-h-[380px] pr-1"></div>
                     </div>
@@ -291,7 +284,7 @@
 
                         <button type="submit" class="w-full bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-brand-600/30 transition flex items-center justify-center space-x-2 text-sm active-touch">
                             <i data-lucide="check-circle" class="w-4 h-4"></i>
-                            <span>Guardar Partido y Sincronizar en la Nube</span>
+                            <span>Guardar Partido</span>
                         </button>
                     </form>
                 </div>
@@ -397,7 +390,6 @@
 
         </main>
 
-        <!-- Mobile Bottom Navigation Bar -->
         <nav class="sm:hidden fixed bottom-0 left-0 right-0 bg-dark-900/95 backdrop-blur-lg border-t border-slate-800/80 z-40 px-1.5 py-2 pb-safe">
             <div class="grid grid-cols-6 gap-0.5 text-center">
                 <button onclick="switchTab('resumen')" id="mob-tab-btn-resumen" class="mob-tab-btn flex flex-col items-center py-1 rounded-xl text-brand-400 active-touch">
@@ -513,10 +505,8 @@
         <span id="toast-message" class="text-xs font-semibold text-white"></span>
     </div>
 
-    <!-- CDNs -->
+    <!-- CDNs de Iconos -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <script>
         const nbaTeams = [
@@ -743,27 +733,19 @@
             }
         }
 
-        // Estado Global con Soporte de Puntuaciones y Temporadas
-        let appState = JSON.parse(localStorage.getItem('nba2k_excel_app_state')) || {
+        // Estado Global local
+        let appState = JSON.parse(localStorage.getItem('nba2k_local_app_state')) || {
             players: ["Joel", "Aaron", "Jheremy"],
             matches: [],
             seasons: []
         };
-
-        function saveStateOriginal() {
-            localStorage.setItem('nba2k_excel_app_state', JSON.stringify(appState));
-        }
 
         function saveState() {
             if (currentUserRole !== 'admin') {
                 showToast("Acceso denegado: Solo el Administrador puede modificar registros", "error");
                 return;
             }
-            saveStateOriginal();
-            if (typeof db !== 'undefined' && !cargandoDesdeNube) {
-                db.ref('appState').set(appState)
-                  .catch((error) => console.error("Error al sincronizar con la nube:", error));
-            }
+            localStorage.setItem('nba2k_local_app_state', JSON.stringify(appState));
         }
 
         function showToast(msg, type = 'success') {
@@ -909,30 +891,7 @@
             switchTab('temporadas');
         }
 
-        function fixArchivedSeasons() {
-            if (!appState.seasons) return;
-            let updated = false;
-            appState.seasons.forEach(season => {
-                if (season.matches && season.matches.length > 0) {
-                    const recalculated = getPlayerStatsForMatches(season.matches, appState.players);
-                    const realChamp = recalculated.length > 0 ? recalculated[0].name : 'N/A';
-                    if (season.champion !== realChamp || JSON.stringify(season.standings) !== JSON.stringify(recalculated)) {
-                        season.standings = recalculated;
-                        season.champion = realChamp;
-                        updated = true;
-                    }
-                }
-            });
-            if (updated) {
-                saveStateOriginal();
-                if (typeof db !== 'undefined' && !cargandoDesdeNube) {
-                    db.ref('appState').set(appState).catch(err => console.error(err));
-                }
-            }
-        }
-
         function renderTemporadas() {
-            fixArchivedSeasons();
             const container = document.getElementById('temporadas-container');
             if (!container) return;
             container.innerHTML = '';
@@ -946,7 +905,7 @@
                             <i data-lucide="archive" class="w-7 h-7"></i>
                         </div>
                         <h3 class="text-base font-bold text-white">No hay temporadas cerradas aún</h3>
-                        <p class="text-xs text-slate-400 max-w-sm mx-auto">Cuando hagas clic en "Cerrar Temporada" en el panel de resumen, todos los resultados y estadísticas se guardarán aquí y la nueva etapa empezará desde 0.</p>
+                        <p class="text-xs text-slate-400 max-w-sm mx-auto">Cuando hagas clic en "Cerrar Temporada" en el resumen, los resultados se guardarán aquí y la nueva etapa empezará desde 0.</p>
                     </div>
                 `;
                 if (window.lucide) lucide.createIcons();
@@ -987,7 +946,7 @@
                             ${champion ? `
                                 <div class="bg-amber-500/10 border border-amber-500/30 px-3.5 py-1.5 rounded-xl flex items-center space-x-2">
                                     <i data-lucide="award" class="w-4 h-4 text-amber-400"></i>
-                                    <span class="text-xs font-bold text-amber-300">Campeón: ${champion.name} (${champion.winRate}% V • ${champion.wins}V - ${champion.losses}D)</span>
+                                    <span class="text-xs font-bold text-amber-300">Campeón: ${champion.name} (${champion.winRate}% V)</span>
                                 </div>
                             ` : ''}
                             <button onclick="deleteSeason('${season.id}')" class="admin-only p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition" title="Eliminar temporada archivada">
@@ -1054,20 +1013,6 @@
                     mostUsed = team;
                 }
             });
-
-            if (!mostUsed) {
-                appState.matches.forEach(m => {
-                    if (m.winnerPlayer === playerName) teamCounts[m.winnerTeam] = (teamCounts[m.winnerTeam] || 0) + 1;
-                    if (m.loserPlayer === playerName) teamCounts[m.loserTeam] = (teamCounts[m.loserTeam] || 0) + 1;
-                });
-                Object.entries(teamCounts).forEach(([team, count]) => {
-                    if (count > maxCount) {
-                        maxCount = count;
-                        mostUsed = team;
-                    }
-                });
-            }
-
             return mostUsed;
         }
 
@@ -1125,7 +1070,7 @@
             const dates = Object.keys(dateGroups).sort();
 
             if (dates.length === 0) {
-                jornadasContainer.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">No hay jornadas registradas aún en esta temporada.</p>`;
+                jornadasContainer.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">No hay jornadas registradas aún.</p>`;
                 return;
             }
 
@@ -1266,7 +1211,7 @@
             if (isBlowout) {
                 showToast(`🔥 ¡Paliza registrada! Victoria por ${diff} puntos`, "success");
             } else {
-                showToast("Partido registrado y sincronizado en la nube");
+                showToast("Partido registrado con éxito");
             }
             switchTab('resumen');
         }
@@ -1552,7 +1497,6 @@
             if (window.lucide) lucide.createIcons();
         }
 
-        // --- FUNCIONES DE EDICIÓN ---
         function openEditMatchModal(matchId) {
             if (currentUserRole !== 'admin') {
                 showToast("Acceso denegado: Modo Invitado", "error");
@@ -1670,49 +1614,9 @@
             }
         }
 
-        function initApp() {
-            checkSessionGate();
-        }
-
-        // --- CONEXIÓN A FIREBASE Y AUTO-CORRECCIÓN ---
-        let db;
-        let cargandoDesdeNube = false;
-
+        // Inicialización local
         window.onload = function() {
-            try {
-                const firebaseConfig = {
-                    apiKey: "AIzaSyD3fu_ycQc0wAPCgDRKdXzY4cX_Jq_vwCE",
-                    authDomain: "k27-scores.firebaseapp.com",
-                    databaseURL: "https://k27-scores-default-rtdb.firebaseio.com",
-                    projectId: "k27-scores",
-                    storageBucket: "k27-scores.firebasestorage.app",
-                    messagingSenderId: "663402619865",
-                    appId: "1:663402619865:web:2f78f2cca0bac17ab32fc8",
-                    measurementId: "G-DFWVLVF976"
-                };
-
-                firebase.initializeApp(firebaseConfig);
-                db = firebase.database();
-
-                db.ref('appState').on('value', (snapshot) => {
-                    const data = snapshot.val();
-                    if (data) {
-                        cargandoDesdeNube = true;
-                        appState = data;
-                        if (!appState.seasons) appState.seasons = [];
-                        fixArchivedSeasons();
-                        saveStateOriginal();
-                        initApp();
-                        cargandoDesdeNube = false;
-                    } else {
-                        db.ref('appState').set(appState);
-                        initApp();
-                    }
-                });
-            } catch (e) {
-                console.error("Error al conectar con Firebase:", e);
-                initApp();
-            }
+            checkSessionGate();
         };
     </script>
 </body>
