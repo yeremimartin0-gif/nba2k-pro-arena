@@ -468,9 +468,41 @@
             { name: "Washington Wizards", code: "WAS", logo: "https://a.espncdn.com/i/teamlogos/nba/500/was.png" }
         ];
 
+        // --- SISTEMA ROBUSTO DE PERSISTENCIA (LOCALSTORAGE MULTI-CONTEXTO) ---
+        function loadSavedState() {
+            try {
+                // Intentar leer de la clave principal
+                let raw = localStorage.getItem('nba2k_local_app_state');
+                if (raw) {
+                    return JSON.parse(raw);
+                }
+                // Si no existe, revisar llaves de respaldo por si cambió el origen en modo PWA
+                for (let i = 0; i < localStorage.length; i++) {
+                    let key = localStorage.key(i);
+                    if (key && key.includes('nba2k_')) {
+                        let data = localStorage.getItem(key);
+                        if (data && data.includes('matches')) {
+                            let parsed = JSON.parse(data);
+                            if (parsed && parsed.matches && parsed.matches.length > 0) {
+                                return parsed;
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Error al cargar localStorage:", e);
+            }
+            return {
+                players: ["Joel", "Aaron", "Jheremy"],
+                matches: [],
+                seasons: []
+            };
+        }
+
         let currentUserRole = localStorage.getItem('nba2k_user_role') || null;
         let adminName = localStorage.getItem('nba2k_admin_name') || null;
         let adminPassword = localStorage.getItem('nba2k_admin_password') || null;
+        let appState = loadSavedState();
 
         function renderLoginGate() {
             const container = document.getElementById('login-form-container');
@@ -647,18 +679,17 @@
             }
         }
 
-        let appState = JSON.parse(localStorage.getItem('nba2k_local_app_state')) || {
-            players: ["Joel", "Aaron", "Jheremy"],
-            matches: [],
-            seasons: []
-        };
-
         function saveState() {
             if (currentUserRole !== 'admin') {
                 showToast("Acceso denegado: Solo el Administrador puede modificar registros", "error");
                 return;
             }
-            localStorage.setItem('nba2k_local_app_state', JSON.stringify(appState));
+            try {
+                localStorage.setItem('nba2k_local_app_state', JSON.stringify(appState));
+            } catch (e) {
+                console.error("Error al guardar estado:", e);
+                showToast("Error al guardar en el navegador", "error");
+            }
         }
 
         function showToast(msg, type = 'success') {
