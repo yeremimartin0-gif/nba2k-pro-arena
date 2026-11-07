@@ -38,7 +38,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #060810; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background-color: #060810; -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; }
+        input, select, textarea { font-size: 16px !important; } /* Previene zoom automático en iOS */
+        @media (min-width: 640px) { input, select, textarea { font-size: 0.875rem !important; } }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #0d111d; }
         ::-webkit-scrollbar-thumb { background: #212b45; border-radius: 4px; }
@@ -84,7 +86,7 @@
                         </div>
                         <div>
                             <h1 class="text-base font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-purple-300 bg-clip-text text-transparent">NBA 2K Pro Arena</h1>
-                            <p class="text-[11px] text-slate-400">Cloud Realtime Sync</p>
+                            <p class="text-[11px] text-slate-400">iOS, Android & PC Web Sync</p>
                         </div>
                     </div>
 
@@ -229,7 +231,7 @@
                         </div>
                         <div>
                             <h2 class="text-base sm:text-lg font-bold text-white">Registrar Nuevo Partido</h2>
-                            <p class="text-xs text-slate-400">Selecciona ganador, perdedor y equipos</p>
+                            <p class="text-xs text-slate-400">Ingresa los puntos del marcador (detector de palizas >15 pts)</p>
                         </div>
                     </div>
 
@@ -242,15 +244,19 @@
                                 </div>
                                 <img id="winner-logo-preview" src="" alt="" class="w-8 h-8 object-contain hidden bg-dark-800 rounded-lg p-1 border border-slate-700">
                             </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div class="sm:col-span-2">
                                     <label class="block text-xs font-medium text-slate-300 mb-1">Jugador Ganador</label>
                                     <select id="winner-player" required onchange="onPlayerSelectChange('winner')" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500 transition"></select>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-medium text-slate-300 mb-1">Equipo NBA (Ganador)</label>
-                                    <select id="winner-team" required onchange="updateTeamLogoPreview('winner')" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500 transition"></select>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Puntos</label>
+                                    <input type="number" id="winner-score" required min="1" placeholder="Ej. 101" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500 transition font-mono">
                                 </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Equipo NBA (Ganador)</label>
+                                <select id="winner-team" required onchange="updateTeamLogoPreview('winner')" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500 transition"></select>
                             </div>
                         </div>
 
@@ -262,15 +268,19 @@
                                 </div>
                                 <img id="loser-logo-preview" src="" alt="" class="w-8 h-8 object-contain hidden bg-dark-800 rounded-lg p-1 border border-slate-700">
                             </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div class="sm:col-span-2">
                                     <label class="block text-xs font-medium text-slate-300 mb-1">Jugador Perdedor</label>
                                     <select id="loser-player" required onchange="onPlayerSelectChange('loser')" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-rose-500 transition"></select>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-medium text-slate-300 mb-1">Equipo NBA (Perdedor)</label>
-                                    <select id="loser-team" required onchange="updateTeamLogoPreview('loser')" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-rose-500 transition"></select>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Puntos</label>
+                                    <input type="number" id="loser-score" required min="0" placeholder="Ej. 90" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-rose-500 transition font-mono">
                                 </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Equipo NBA (Perdedor)</label>
+                                <select id="loser-team" required onchange="updateTeamLogoPreview('loser')" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-rose-500 transition"></select>
                             </div>
                         </div>
 
@@ -343,7 +353,7 @@
                                 <i data-lucide="history" class="w-5 h-5 text-brand-400"></i>
                                 <span>Historial Completo de Partidos</span>
                             </h2>
-                            <p class="text-xs text-slate-400">Registro sincronizado en tiempo real</p>
+                            <p class="text-xs text-slate-400">Registro con marcadores y palizas</p>
                         </div>
                         <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
                             <input type="text" id="historial-search" oninput="renderHistorial()" placeholder="Buscar equipo o fecha..." class="w-full sm:w-56 bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-brand-500 transition">
@@ -361,6 +371,7 @@
                                     <th class="py-3 px-3">Fecha</th>
                                     <th class="py-3 px-3 text-emerald-400">Ganador</th>
                                     <th class="py-3 px-3 text-rose-400">Perdedor</th>
+                                    <th class="py-3 px-3 text-center">Marcador</th>
                                     <th class="py-3 px-3 text-center admin-only">Acciones</th>
                                 </tr>
                             </thead>
@@ -441,6 +452,10 @@
                         <select id="edit-winner-player" required class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition"></select>
                     </div>
                     <div>
+                        <label class="block text-[11px] font-medium text-emerald-400 mb-1">Puntos Ganador</label>
+                        <input type="number" id="edit-winner-score" required min="1" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition font-mono">
+                    </div>
+                    <div class="sm:col-span-2">
                         <label class="block text-[11px] font-medium text-emerald-400 mb-1">Equipo Ganador</label>
                         <select id="edit-winner-team" required class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition"></select>
                     </div>
@@ -451,6 +466,10 @@
                         <select id="edit-loser-player" required class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500 transition"></select>
                     </div>
                     <div>
+                        <label class="block text-[11px] font-medium text-rose-400 mb-1">Puntos Perdedor</label>
+                        <input type="number" id="edit-loser-score" required min="0" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500 transition font-mono">
+                    </div>
+                    <div class="sm:col-span-2">
                         <label class="block text-[11px] font-medium text-rose-400 mb-1">Equipo Perdedor</label>
                         <select id="edit-loser-team" required class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500 transition"></select>
                     </div>
@@ -724,7 +743,7 @@
             }
         }
 
-        // Estado Global con Soporte de Temporadas Archivadas
+        // Estado Global con Soporte de Puntuaciones y Temporadas
         let appState = JSON.parse(localStorage.getItem('nba2k_excel_app_state')) || {
             players: ["Joel", "Aaron", "Jheremy"],
             matches: [],
@@ -844,7 +863,6 @@
                 s.currentStreakStr = streakCount > 0 ? `${streakCount}${currentStreakType === 'W' ? 'V' : 'D'}` : '—';
             });
 
-            // ORDEN PRINCIPAL: Mayor % de victoria -> Mayor victorias totales -> Menor partidos jugados
             return Object.values(stats).sort((a, b) => {
                 if (b.winRate !== a.winRate) return b.winRate - a.winRate;
                 if (b.wins !== a.wins) return b.wins - a.wins;
@@ -891,7 +909,6 @@
             switchTab('temporadas');
         }
 
-        // Recalcular y sincronizar temporadas archivadas en Firebase y LocalStorage
         function fixArchivedSeasons() {
             if (!appState.seasons) return;
             let updated = false;
@@ -1177,6 +1194,8 @@
             });
 
             document.getElementById('match-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('winner-score').value = '';
+            document.getElementById('loser-score').value = '';
 
             onPlayerSelectChange('winner');
             onPlayerSelectChange('loser');
@@ -1203,6 +1222,8 @@
             const loserPlayer = document.getElementById('loser-player').value;
             const winnerTeam = document.getElementById('winner-team').value;
             const loserTeam = document.getElementById('loser-team').value;
+            const winnerScore = parseInt(document.getElementById('winner-score').value) || 0;
+            const loserScore = parseInt(document.getElementById('loser-score').value) || 0;
             const date = document.getElementById('match-date').value;
 
             if (winnerPlayer === loserPlayer) {
@@ -1210,18 +1231,35 @@
                 return;
             }
 
+            if (winnerScore <= loserScore) {
+                showToast("El puntaje del ganador debe ser mayor al del perdedor", "error");
+                return;
+            }
+
+            const diff = winnerScore - loserScore;
+            const isBlowout = diff > 15;
+
             const newMatch = {
                 id: 'm_' + Date.now(),
                 date,
                 winnerPlayer,
                 winnerTeam,
                 loserPlayer,
-                loserTeam
+                loserTeam,
+                winnerScore,
+                loserScore,
+                isBlowout,
+                diff
             };
 
             appState.matches.push(newMatch);
             saveState();
-            showToast("Partido registrado y sincronizado en la nube");
+            
+            if (isBlowout) {
+                showToast(`🔥 ¡Paliza registrada! Victoria por ${diff} puntos`, "success");
+            } else {
+                showToast("Partido registrado y sincronizado en la nube");
+            }
             switchTab('resumen');
         }
 
@@ -1396,16 +1434,21 @@
                                 const wTeam = nbaTeams.find(t => t.code === m.winnerTeam) || { logo: '', name: m.winnerTeam };
                                 const lTeam = nbaTeams.find(t => t.code === m.loserTeam) || { logo: '', name: m.loserTeam };
                                 const isP1Winner = m.winnerPlayer === p1;
+                                const wPts = m.winnerScore !== undefined ? m.winnerScore : '—';
+                                const lPts = m.loserScore !== undefined ? m.loserScore : '—';
 
                                 return `
                                     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-xl bg-dark-950 border border-slate-800 text-xs gap-2">
-                                        <span class="text-slate-500 font-mono text-[10px] sm:text-xs">${m.date}</span>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-slate-500 font-mono text-[10px] sm:text-xs">${m.date}</span>
+                                            ${m.isBlowout ? '<span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-md text-[10px] font-bold">🔥 Paliza</span>' : ''}
+                                        </div>
                                         <div class="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto justify-between sm:justify-start">
                                             <div class="flex items-center space-x-1.5 ${isP1Winner ? 'text-emerald-400 font-bold' : 'text-slate-400'}">
                                                 <img src="${wTeam.logo}" class="w-4 h-4 object-contain">
                                                 <span>${m.winnerPlayer} (${m.winnerTeam})</span>
                                             </div>
-                                            <span class="text-slate-600 font-bold">def</span>
+                                            <span class="font-mono bg-dark-800 px-2 py-0.5 rounded text-white">${wPts} - ${lPts}</span>
                                             <div class="flex items-center space-x-1.5 ${!isP1Winner ? 'text-emerald-400 font-bold' : 'text-slate-400'}">
                                                 <img src="${lTeam.logo}" class="w-4 h-4 object-contain">
                                                 <span>${m.loserPlayer} (${m.loserTeam})</span>
@@ -1450,13 +1493,15 @@
             }
 
             if (matches.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-500">No hay partidos que coincidan con la búsqueda.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-500">No hay partidos que coincidan con la búsqueda.</td></tr>`;
                 return;
             }
 
             matches.forEach((m, idx) => {
                 const wTeam = nbaTeams.find(t => t.code === m.winnerTeam) || { logo: '', name: m.winnerTeam };
                 const lTeam = nbaTeams.find(t => t.code === m.loserTeam) || { logo: '', name: m.loserTeam };
+                const wPts = m.winnerScore !== undefined ? m.winnerScore : '—';
+                const lPts = m.loserScore !== undefined ? m.loserScore : '—';
 
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-dark-800/40 transition';
@@ -1473,6 +1518,12 @@
                         <div class="flex items-center space-x-2">
                             <img src="${lTeam.logo}" class="w-5 h-5 object-contain bg-dark-950 rounded p-0.5 border border-slate-800">
                             <span>${m.loserPlayer} <span class="text-xs text-slate-400 font-mono">(${m.loserTeam})</span></span>
+                        </div>
+                    </td>
+                    <td class="py-3 px-3 text-center">
+                        <div class="inline-flex items-center space-x-1.5 bg-dark-950 px-2.5 py-1 rounded-lg border border-slate-800">
+                            <span class="font-mono font-bold text-white">${wPts} - ${lPts}</span>
+                            ${m.isBlowout ? '<span class="text-[10px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded font-bold" title="Paliza (+15 pts)">🔥 +'+m.diff+'</span>' : ''}
                         </div>
                     </td>
                     <td class="py-3 px-3 text-center admin-only">
@@ -1530,6 +1581,8 @@
             editLPlayer.value = match.loserPlayer;
             editWTeam.value = match.winnerTeam;
             editLTeam.value = match.loserTeam;
+            document.getElementById('edit-winner-score').value = match.winnerScore !== undefined ? match.winnerScore : '';
+            document.getElementById('edit-loser-score').value = match.loserScore !== undefined ? match.loserScore : '';
 
             document.getElementById('edit-match-modal').classList.remove('hidden');
         }
@@ -1547,12 +1600,22 @@
             const loserPlayer = document.getElementById('edit-loser-player').value;
             const winnerTeam = document.getElementById('edit-winner-team').value;
             const loserTeam = document.getElementById('edit-loser-team').value;
+            const winnerScore = parseInt(document.getElementById('edit-winner-score').value) || 0;
+            const loserScore = parseInt(document.getElementById('edit-loser-score').value) || 0;
             const date = document.getElementById('edit-match-date').value;
 
             if (winnerPlayer === loserPlayer) {
                 showToast("El ganador y el perdedor deben ser distintos", "error");
                 return;
             }
+
+            if (winnerScore <= loserScore) {
+                showToast("El puntaje del ganador debe ser mayor al del perdedor", "error");
+                return;
+            }
+
+            const diff = winnerScore - loserScore;
+            const isBlowout = diff > 15;
 
             const matchIndex = appState.matches.findIndex(m => m.id === matchId);
             if (matchIndex !== -1) {
@@ -1562,7 +1625,11 @@
                     winnerPlayer,
                     winnerTeam,
                     loserPlayer,
-                    loserTeam
+                    loserTeam,
+                    winnerScore,
+                    loserScore,
+                    isBlowout,
+                    diff
                 };
                 saveState();
                 closeEditMatchModal();
