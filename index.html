@@ -150,12 +150,12 @@
                         </div>
                     </div>
 
-                    <div class="bg-dark-900 border border-slate-800/80 rounded-2xl p-4 sm:p-5 shadow-xl relative overflow-hidden group hover:border-indigo-500/50 transition">
-                        <p class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">Jugadores</p>
+                    <div class="bg-dark-900 border border-slate-800/80 rounded-2xl p-4 sm:p-5 shadow-xl relative overflow-hidden group hover:border-rose-500/50 transition">
+                        <p class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">Palizas (>= 15 pts)</p>
                         <div class="mt-2 flex items-baseline justify-between">
-                            <span id="kpi-total-players" class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">3</span>
-                            <div class="p-2 sm:p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400">
-                                <i data-lucide="users" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                            <span id="kpi-total-blowouts" class="text-2xl sm:text-3xl font-extrabold text-rose-400 tracking-tight">0</span>
+                            <div class="p-2 sm:p-2.5 rounded-xl bg-rose-500/10 text-rose-400">
+                                <i data-lucide="flame" class="w-4 h-4 sm:w-5 sm:h-5"></i>
                             </div>
                         </div>
                     </div>
@@ -246,14 +246,18 @@
                                 </div>
                                 <img id="winner-logo-preview" src="" alt="" class="w-8 h-8 object-contain hidden bg-dark-800 rounded-lg p-1 border border-slate-700">
                             </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div class="sm:col-span-1">
                                     <label class="block text-xs font-medium text-slate-300 mb-1">Jugador Ganador</label>
                                     <select id="winner-player" required onchange="onPlayerSelectChange('winner')" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500 transition"></select>
                                 </div>
-                                <div>
+                                <div class="sm:col-span-1">
                                     <label class="block text-xs font-medium text-slate-300 mb-1">Equipo NBA (Ganador)</label>
                                     <select id="winner-team" required onchange="updateTeamLogoPreview('winner')" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500 transition"></select>
+                                </div>
+                                <div class="sm:col-span-1">
+                                    <label class="block text-xs font-medium text-emerald-400 mb-1">Score / Puntos</label>
+                                    <input type="number" id="winner-score" min="0" placeholder="Ej. 105" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500 transition">
                                 </div>
                             </div>
                         </div>
@@ -266,14 +270,18 @@
                                 </div>
                                 <img id="loser-logo-preview" src="" alt="" class="w-8 h-8 object-contain hidden bg-dark-800 rounded-lg p-1 border border-slate-700">
                             </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div class="sm:col-span-1">
                                     <label class="block text-xs font-medium text-slate-300 mb-1">Jugador Perdedor</label>
                                     <select id="loser-player" required onchange="onPlayerSelectChange('loser')" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-rose-500 transition"></select>
                                 </div>
-                                <div>
+                                <div class="sm:col-span-1">
                                     <label class="block text-xs font-medium text-slate-300 mb-1">Equipo NBA (Perdedor)</label>
                                     <select id="loser-team" required onchange="updateTeamLogoPreview('loser')" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-rose-500 transition"></select>
+                                </div>
+                                <div class="sm:col-span-1">
+                                    <label class="block text-xs font-medium text-rose-400 mb-1">Score / Puntos</label>
+                                    <input type="number" id="loser-score" min="0" placeholder="Ej. 98" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-rose-500 transition">
                                 </div>
                             </div>
                         </div>
@@ -353,7 +361,7 @@
                             <p class="text-xs text-slate-400">Registro sincronizado en tiempo real</p>
                         </div>
                         <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-                            <input type="text" id="historial-search" oninput="renderHistorial()" placeholder="Buscar equipo o fecha..." class="w-full sm:w-56 bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-brand-500 transition">
+                            <input type="text" id="historial-search" oninput="renderHistorial()" placeholder="Buscar equipo, fecha o paliza..." class="w-full sm:w-60 bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-brand-500 transition">
                             <select id="historial-filter-player" onchange="renderHistorial()" class="w-full sm:w-auto bg-dark-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-500 transition">
                                 <option value="Todos los jugadores">Todos los jugadores</option>
                             </select>
@@ -367,6 +375,7 @@
                                     <th class="py-3 px-3">#</th>
                                     <th class="py-3 px-3">Fecha</th>
                                     <th class="py-3 px-3 text-emerald-400">Ganador</th>
+                                    <th class="py-3 px-3 text-center">Score</th>
                                     <th class="py-3 px-3 text-rose-400">Perdedor</th>
                                     <th class="py-3 px-3 text-center admin-only">Acciones</th>
                                 </tr>
@@ -445,7 +454,7 @@
                     </div>
                     <input type="date" id="edit-match-date" required class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-brand-500 transition">
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-emerald-950/20 border border-emerald-500/30 p-3 rounded-xl">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-emerald-950/20 border border-emerald-500/30 p-3 rounded-xl">
                     <div>
                         <label class="block text-[11px] font-medium text-emerald-400 mb-1">Ganador</label>
                         <select id="edit-winner-player" required class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition"></select>
@@ -454,8 +463,12 @@
                         <label class="block text-[11px] font-medium text-emerald-400 mb-1">Equipo Ganador</label>
                         <select id="edit-winner-team" required class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition"></select>
                     </div>
+                    <div>
+                        <label class="block text-[11px] font-medium text-emerald-400 mb-1">Score Ganador</label>
+                        <input type="number" id="edit-winner-score" min="0" placeholder="Puntos" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition">
+                    </div>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-rose-950/20 border border-rose-500/30 p-3 rounded-xl">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-rose-950/20 border border-rose-500/30 p-3 rounded-xl">
                     <div>
                         <label class="block text-[11px] font-medium text-rose-400 mb-1">Perdedor</label>
                         <select id="edit-loser-player" required class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500 transition"></select>
@@ -463,6 +476,10 @@
                     <div>
                         <label class="block text-[11px] font-medium text-rose-400 mb-1">Equipo Perdedor</label>
                         <select id="edit-loser-team" required class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500 transition"></select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-medium text-rose-400 mb-1">Score Perdedor</label>
+                        <input type="number" id="edit-loser-score" min="0" placeholder="Puntos" class="w-full bg-dark-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500 transition">
                     </div>
                 </div>
                 <div class="flex justify-end space-x-3 pt-2 border-t border-slate-800">
@@ -1223,6 +1240,8 @@
 
             // USA HORA Y FECHA DE REPÚBLICA DOMINICANA
             document.getElementById('match-date').value = getDOMDateString();
+            document.getElementById('winner-score').value = '';
+            document.getElementById('loser-score').value = '';
 
             onPlayerSelectChange('winner');
             onPlayerSelectChange('loser');
@@ -1249,6 +1268,8 @@
             const loserPlayer = document.getElementById('loser-player').value;
             const winnerTeam = document.getElementById('winner-team').value;
             const loserTeam = document.getElementById('loser-team').value;
+            const winnerScore = document.getElementById('winner-score').value.trim();
+            const loserScore = document.getElementById('loser-score').value.trim();
             const date = document.getElementById('match-date').value;
 
             if (winnerPlayer === loserPlayer) {
@@ -1261,128 +1282,117 @@
                 date,
                 winnerPlayer,
                 winnerTeam,
+                winnerScore: winnerScore !== "" ? parseInt(winnerScore, 10) : null,
                 loserPlayer,
-                loserTeam
+                loserTeam,
+                loserScore: loserScore !== "" ? parseInt(loserScore, 10) : null
             };
 
             try {
                 if (!Array.isArray(appState.matches)) appState.matches = toArray(appState.matches);
                 appState.matches.push(newMatch);
-                saveState();
-                showToast("Partido registrado y sincronizado en la nube");
-                switchTab('resumen');
-            } catch (err) {
-                console.error("Error al registrar el partido:", err);
-                showToast("Error al guardar el partido: " + err.message, "error");
-            }
+        // HELPER PARA DETECTAR PALIZA (Blowout >= 15 pts)
+        function isBlowout(wScore, lScore) {
+            if (wScore === undefined || wScore === null || lScore === undefined || lScore === null) return false;
+            const diff = parseInt(wScore, 10) - parseInt(lScore, 10);
+            return diff >= 15;
         }
 
-        function renderJugadores() {
-            const grid = document.getElementById('players-grid');
-            grid.innerHTML = '';
+        function getBlowoutDiff(wScore, lScore) {
+            if (wScore === undefined || wScore === null || lScore === undefined || lScore === null) return 0;
+            return parseInt(wScore, 10) - parseInt(lScore, 10);
+        }
+
+        function renderResumen() {
             const stats = getPlayerStats();
+            document.getElementById('kpi-total-matches').textContent = appState.matches.length;
+            document.getElementById('kpi-total-players').textContent = appState.players.length;
 
-            stats.forEach(s => {
-                const sortedTeams = Object.entries(s.teamsUsed).sort((a, b) => b[1] - a[1]);
+            const blowoutsCount = appState.matches.filter(m => isBlowout(m.winnerScore, m.loserScore)).length;
+            const kpiBlowouts = document.getElementById('kpi-total-blowouts');
+            if (kpiBlowouts) kpiBlowouts.textContent = blowoutsCount;
 
-                let teamsLogosHTML = sortedTeams.slice(0, 3).map(([code, count]) => {
-                    const tObj = nbaTeams.find(t => t.code === code) || { logo: '', name: code };
-                    return `
-                        <div class="flex items-center space-x-1.5 bg-dark-950 px-2.5 py-1 rounded-lg border border-slate-800 text-xs">
-                            <img src="${tObj.logo}" class="w-4 h-4 object-contain" alt="${code}">
-                            <span class="font-bold text-slate-300">${code}</span>
-                            <span class="text-slate-500 font-mono">(${count})</span>
-                        </div>
-                    `;
-                }).join('');
+            if (stats.length > 0) {
+                document.getElementById('kpi-best-winrate').textContent = `${stats[0].winRate}% (${stats[0].name})`;
+                document.getElementById('kpi-current-leader').textContent = `${stats[0].name} (${stats[0].winRate}%)`;
+            }
+
+            const tbody = document.getElementById('standings-table-body');
+            tbody.innerHTML = '';
+            stats.forEach((s, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-dark-800/40 transition';
+                tr.innerHTML = `
+                    <td class="py-3 px-2 sm:px-4 font-bold ${idx === 0 ? 'text-amber-400' : 'text-slate-500'}">#${idx + 1}</td>
+                    <td class="py-3 px-2 sm:px-4 font-bold text-white flex items-center space-x-2">
+                        <div class="w-6 h-6 rounded-md bg-brand-500/20 text-brand-400 flex items-center justify-center text-xs">${s.name.charAt(0)}</div>
+                        <span>${s.name}</span>
+                        ${idx === 0 ? '<span class="text-xs">👑</span>' : ''}
+                    </td>
+                    <td class="py-3 px-2 sm:px-4 text-center font-mono text-slate-300">${s.played}</td>
+                    <td class="py-3 px-2 sm:px-4 text-center font-mono text-emerald-400 font-semibold">${s.wins}</td>
+                    <td class="py-3 px-2 sm:px-4 text-center font-mono text-rose-400 font-semibold">${s.losses}</td>
+                    <td class="py-3 px-2 sm:px-4 text-center font-mono font-semibold ${s.currentStreakStr.includes('V') ? 'text-emerald-400' : 'text-rose-400'}">${s.currentStreakStr}</td>
+                    <td class="py-3 px-2 sm:px-4 text-right font-mono font-bold ${idx === 0 ? 'text-amber-400' : 'text-white'}">${s.winRate}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const jornadasContainer = document.getElementById('jornadas-container');
+            jornadasContainer.innerHTML = '';
+
+            const dateGroups = {};
+            appState.matches.forEach(m => {
+                if (!dateGroups[m.date]) dateGroups[m.date] = [];
+                dateGroups[m.date].push(m);
+            });
+
+            const dates = Object.keys(dateGroups).sort();
+
+            if (dates.length === 0) {
+                jornadasContainer.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">No hay jornadas registradas aún en esta temporada.</p>`;
+                return;
+            }
+
+            dates.forEach((date, index) => {
+                const matches = dateGroups[date];
+                const dayStats = {};
+                appState.players.forEach(p => dayStats[p] = { wins: 0, losses: 0 });
+
+                matches.forEach(m => {
+                    if (dayStats[m.winnerPlayer]) dayStats[m.winnerPlayer].wins++;
+                    if (dayStats[m.loserPlayer]) dayStats[m.loserPlayer].losses++;
+                });
+
+                const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
                 const card = document.createElement('div');
-                card.className = 'bg-dark-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl space-y-5 hover:border-brand-500/40 transition';
+                card.className = 'bg-dark-950 p-3.5 rounded-xl border border-slate-800 space-y-2';
+                
+                let statsHTML = Object.entries(dayStats)
+                    .filter(([_, data]) => (data.wins + data.losses) > 0)
+                    .map(([player, data]) => `
+                        <div class="flex justify-between text-xs py-1 border-b border-slate-800/40 last:border-0">
+                            <span class="font-medium text-slate-300">${player}</span>
+                            <span class="font-mono text-slate-400">
+                                <span class="text-emerald-400 font-semibold">${data.wins}V</span> - <span class="text-rose-400 font-semibold">${data.losses}D</span>
+                            </span>
+                        </div>
+                    `).join('');
+
                 card.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-brand-600 to-indigo-600 text-white font-extrabold text-lg sm:text-xl flex items-center justify-center shadow-md">
-                                ${s.name.charAt(0)}
-                            </div>
-                            <div>
-                                <h3 class="text-base sm:text-lg font-bold text-white">${s.name}</h3>
-                                <p class="text-xs text-slate-400">Racha: <span class="font-bold ${s.currentStreakStr.includes('V') ? 'text-emerald-400' : 'text-rose-400'}">${s.currentStreakStr}</span></p>
-                            </div>
-                        </div>
-                        <span class="px-3 py-1 bg-brand-500/10 text-brand-400 border border-brand-500/20 rounded-full font-mono font-bold text-xs">${s.winRate}% V</span>
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                        <span class="text-xs font-bold text-brand-400 uppercase tracking-wide">Jornada ${index + 1} (${formattedDate})</span>
+                        <span class="text-[11px] font-mono bg-dark-800 text-slate-300 px-2 py-0.5 rounded-full">${matches.length} PJ</span>
                     </div>
-
-                    <div class="grid grid-cols-3 gap-2 bg-dark-950 p-3 rounded-xl border border-slate-800/80 text-center">
-                        <div>
-                            <p class="text-[10px] text-slate-400 uppercase font-semibold">Jugados</p>
-                            <p class="text-sm sm:text-base font-bold text-white font-mono mt-0.5">${s.played}</p>
-                        </div>
-                        <div>
-                            <p class="text-[10px] text-slate-400 uppercase font-semibold">Ganados</p>
-                            <p class="text-sm sm:text-base font-bold text-emerald-400 font-mono mt-0.5">${s.wins}</p>
-                        </div>
-                        <div>
-                            <p class="text-[10px] text-slate-400 uppercase font-semibold">Perdidos</p>
-                            <p class="text-sm sm:text-base font-bold text-rose-400 font-mono mt-0.5">${s.losses}</p>
-                        </div>
-                    </div>
-
-                    <div class="space-y-2">
-                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Equipos Más Usados</p>
-                        <div class="flex flex-wrap gap-2">
-                            ${teamsLogosHTML || '<span class="text-xs text-slate-500">Sin registros</span>'}
-                        </div>
+                    <div class="space-y-1">
+                        ${statsHTML}
                     </div>
                 `;
-                grid.appendChild(card);
+                jornadasContainer.appendChild(card);
             });
-        }
-
-        function openAddPlayerModal() {
-            if (currentUserRole !== 'admin') {
-                showToast("Acceso denegado: Modo Invitado", "error");
-                return;
-            }
-            document.getElementById('new-player-name').value = '';
-            document.getElementById('add-player-modal').classList.remove('hidden');
-        }
-
-        function closeAddPlayerModal() {
-            document.getElementById('add-player-modal').classList.add('hidden');
-        }
-
-        function handleAddPlayer(e) {
-            e.preventDefault();
-            if (currentUserRole !== 'admin') return;
-
-            const name = document.getElementById('new-player-name').value.trim();
-            if (!name) return;
-            if (appState.players.includes(name)) {
-                showToast("El jugador ya existe", "error");
-                return;
-            }
-            appState.players.push(name);
-            saveState();
-            closeAddPlayerModal();
-            renderJugadores();
-            showToast(`Jugador ${name} agregado con éxito`);
-        }
-
-        function initH2H() {
-            const p1 = document.getElementById('h2h-player1');
-            const p2 = document.getElementById('h2h-player2');
-
-            p1.innerHTML = '';
-            p2.innerHTML = '';
-
-            appState.players.forEach(p => {
-                p1.innerHTML += `<option value="${p}">${p}</option>`;
-                p2.innerHTML += `<option value="${p}">${p}</option>`;
-            });
-
-            if (appState.players.length > 1) p2.selectedIndex = 1;
-
-            updateH2H();
+            applyRolePermissions();
+            if (window.lucide) lucide.createIcons();
         }
 
         function updateH2H() {
@@ -1448,16 +1458,23 @@
                                 const wTeam = nbaTeams.find(t => t.code === m.winnerTeam) || { logo: '', name: m.winnerTeam };
                                 const lTeam = nbaTeams.find(t => t.code === m.loserTeam) || { logo: '', name: m.loserTeam };
                                 const isP1Winner = m.winnerPlayer === p1;
+                                const hasScores = m.winnerScore !== undefined && m.winnerScore !== null && m.loserScore !== undefined && m.loserScore !== null;
+                                const scoreText = hasScores ? `${m.winnerScore} - ${m.loserScore}` : '—';
+                                const blowout = isBlowout(m.winnerScore, m.loserScore);
+                                const diff = getBlowoutDiff(m.winnerScore, m.loserScore);
 
                                 return `
                                     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-xl bg-dark-950 border border-slate-800 text-xs gap-2">
-                                        <span class="text-slate-500 font-mono text-[10px] sm:text-xs">${m.date}</span>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-slate-500 font-mono text-[10px] sm:text-xs">${m.date}</span>
+                                            ${blowout ? `<span class="bg-gradient-to-r from-rose-600 to-amber-600 text-white font-extrabold text-[9px] px-2 py-0.5 rounded-full shadow animate-pulse flex items-center space-x-1"><span>🔥 PALIZA (+${diff})</span></span>` : ''}
+                                        </div>
                                         <div class="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto justify-between sm:justify-start">
                                             <div class="flex items-center space-x-1.5 ${isP1Winner ? 'text-emerald-400 font-bold' : 'text-slate-400'}">
                                                 <img src="${wTeam.logo}" class="w-4 h-4 object-contain">
                                                 <span>${m.winnerPlayer} (${m.winnerTeam})</span>
                                             </div>
-                                            <span class="text-slate-600 font-bold">def</span>
+                                            <span class="text-amber-400 font-mono font-bold bg-dark-900 px-2 py-0.5 rounded border border-slate-800">${scoreText}</span>
                                             <div class="flex items-center space-x-1.5 ${!isP1Winner ? 'text-emerald-400 font-bold' : 'text-slate-400'}">
                                                 <img src="${lTeam.logo}" class="w-4 h-4 object-contain">
                                                 <span>${m.loserPlayer} (${m.loserTeam})</span>
@@ -1492,23 +1509,30 @@
             }
 
             if (search) {
-                matches = matches.filter(m => 
-                    m.winnerPlayer.toLowerCase().includes(search) || 
-                    m.loserPlayer.toLowerCase().includes(search) || 
-                    m.winnerTeam.toLowerCase().includes(search) || 
-                    m.loserTeam.toLowerCase().includes(search) || 
-                    m.date.includes(search)
-                );
+                matches = matches.filter(m => {
+                    const blowout = isBlowout(m.winnerScore, m.loserScore);
+                    const isBlowoutSearch = search.includes('paliza') && blowout;
+                    return isBlowoutSearch ||
+                        m.winnerPlayer.toLowerCase().includes(search) || 
+                        m.loserPlayer.toLowerCase().includes(search) || 
+                        m.winnerTeam.toLowerCase().includes(search) || 
+                        m.loserTeam.toLowerCase().includes(search) || 
+                        m.date.includes(search);
+                });
             }
 
             if (matches.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-500">No hay partidos que coincidan con la búsqueda.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-500">No hay partidos que coincidan con la búsqueda.</td></tr>`;
                 return;
             }
 
             matches.forEach((m, idx) => {
                 const wTeam = nbaTeams.find(t => t.code === m.winnerTeam) || { logo: '', name: m.winnerTeam };
                 const lTeam = nbaTeams.find(t => t.code === m.loserTeam) || { logo: '', name: m.loserTeam };
+                const hasScores = m.winnerScore !== undefined && m.winnerScore !== null && m.loserScore !== undefined && m.loserScore !== null;
+                const scoreDisplay = hasScores ? `${m.winnerScore} - ${m.loserScore}` : '—';
+                const blowout = isBlowout(m.winnerScore, m.loserScore);
+                const diff = getBlowoutDiff(m.winnerScore, m.loserScore);
 
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-dark-800/40 transition';
@@ -1519,6 +1543,12 @@
                         <div class="flex items-center space-x-2">
                             <img src="${wTeam.logo}" class="w-5 h-5 object-contain bg-dark-950 rounded p-0.5 border border-slate-800">
                             <span>${m.winnerPlayer} <span class="text-xs text-slate-400 font-mono">(${m.winnerTeam})</span></span>
+                        </div>
+                    </td>
+                    <td class="py-3 px-3 text-center font-mono font-bold text-amber-400">
+                        <div class="flex flex-col items-center justify-center space-y-1">
+                            <span class="bg-dark-950 px-2 py-0.5 rounded border border-slate-800">${scoreDisplay}</span>
+                            ${blowout ? `<span class="inline-flex items-center space-x-1 bg-gradient-to-r from-rose-600 to-amber-600 text-white font-extrabold text-[9px] px-2 py-0.5 rounded-full shadow animate-pulse"><span>🔥 PALIZA (+${diff})</span></span>` : ''}
                         </div>
                     </td>
                     <td class="py-3 px-3 text-rose-400">
@@ -1565,6 +1595,8 @@
             const editLPlayer = document.getElementById('edit-loser-player');
             const editWTeam = document.getElementById('edit-winner-team');
             const editLTeam = document.getElementById('edit-loser-team');
+            const editWScore = document.getElementById('edit-winner-score');
+            const editLScore = document.getElementById('edit-loser-score');
 
             // Carga dinámica de opciones en los selectores
             editWPlayer.innerHTML = '';
@@ -1587,6 +1619,8 @@
             editLPlayer.value = match.loserPlayer;
             editWTeam.value = match.winnerTeam;
             editLTeam.value = match.loserTeam;
+            editWScore.value = (match.winnerScore !== undefined && match.winnerScore !== null) ? match.winnerScore : '';
+            editLScore.value = (match.loserScore !== undefined && match.loserScore !== null) ? match.loserScore : '';
 
             document.getElementById('edit-match-modal').classList.remove('hidden');
             if (window.lucide) lucide.createIcons();
@@ -1605,6 +1639,8 @@
             const loserPlayer = document.getElementById('edit-loser-player').value;
             const winnerTeam = document.getElementById('edit-winner-team').value;
             const loserTeam = document.getElementById('edit-loser-team').value;
+            const winnerScore = document.getElementById('edit-winner-score').value.trim();
+            const loserScore = document.getElementById('edit-loser-score').value.trim();
             const date = document.getElementById('edit-match-date').value;
 
             if (winnerPlayer === loserPlayer) {
@@ -1619,8 +1655,10 @@
                     date,
                     winnerPlayer,
                     winnerTeam,
+                    winnerScore: winnerScore !== "" ? parseInt(winnerScore, 10) : null,
                     loserPlayer,
-                    loserTeam
+                    loserTeam,
+                    loserScore: loserScore !== "" ? parseInt(loserScore, 10) : null
                 };
                 
                 // Guardar localmente y sincronizar en Firebase Realtime Database
