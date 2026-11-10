@@ -563,7 +563,7 @@
             { name: "Washington Wizards", code: "WAS", logo: "https://a.espncdn.com/i/teamlogos/nba/500/was.png" }
         ];
 
-        // HELPER HORA Y FECHA DE REPÚBLICA DOMINICANA (GMT-4 / America/Santo_Domingo)
+        // HELPER HORA Y FECHA DE REPÚBLICA DOMINICANA (America/Santo_Domingo)
         function getDOMDateString(dateObj = new Date()) {
             const formatter = new Intl.DateTimeFormat('en-CA', {
                 timeZone: 'America/Santo_Domingo',
@@ -571,7 +571,19 @@
                 month: '2-digit',
                 day: '2-digit'
             });
-            return formatter.format(dateObj); // Retorna formato AAAA-MM-DD ajustado a Rep. Dominicana
+            return formatter.format(dateObj); // Retorna AAAA-MM-DD
+        }
+
+        // HELPER DETECTOR DE PALIZAS (>= 15 pts)
+        function isBlowout(wScore, lScore) {
+            if (wScore === undefined || wScore === null || lScore === undefined || lScore === null) return false;
+            const diff = parseInt(wScore, 10) - parseInt(lScore, 10);
+            return diff >= 15;
+        }
+
+        function getBlowoutDiff(wScore, lScore) {
+            if (wScore === undefined || wScore === null || lScore === undefined || lScore === null) return 0;
+            return parseInt(wScore, 10) - parseInt(lScore, 10);
         }
 
         let currentUserRole = localStorage.getItem('nba2k_user_role') || null;
@@ -580,6 +592,7 @@
 
         function renderLoginGate() {
             const container = document.getElementById('login-form-container');
+            if (!container) return;
             container.innerHTML = '';
 
             if (!adminName) {
@@ -765,7 +778,7 @@
             }
         }
 
-        // Estado Global con Soporte de Temporadas Archivadas
+        // Estado Global
         let appState = JSON.parse(localStorage.getItem('nba2k_excel_app_state')) || {
             players: ["Joel", "Aaron", "Jheremy"],
             matches: [],
@@ -1129,15 +1142,29 @@
 
         function renderResumen() {
             const stats = getPlayerStats();
-            document.getElementById('kpi-total-matches').textContent = appState.matches.length;
-            document.getElementById('kpi-total-players').textContent = appState.players.length;
+            const totalMatchesEl = document.getElementById('kpi-total-matches');
+            if (totalMatchesEl) totalMatchesEl.textContent = appState.matches.length;
 
-            if (stats.length > 0) {
-                document.getElementById('kpi-best-winrate').textContent = `${stats[0].winRate}% (${stats[0].name})`;
-                document.getElementById('kpi-current-leader').textContent = `${stats[0].name} (${stats[0].winRate}%)`;
+            const totalPlayersEl = document.getElementById('kpi-total-players');
+            if (totalPlayersEl) totalPlayersEl.textContent = appState.players.length;
+
+            const blowoutsCount = appState.matches.filter(m => isBlowout(m.winnerScore, m.loserScore)).length;
+            const kpiBlowouts = document.getElementById('kpi-total-blowouts');
+            if (kpiBlowouts) kpiBlowouts.textContent = blowoutsCount;
+
+            const bestWinrateEl = document.getElementById('kpi-best-winrate');
+            const currentLeaderEl = document.getElementById('kpi-current-leader');
+
+            if (stats.length > 0 && stats[0].played > 0) {
+                if (bestWinrateEl) bestWinrateEl.textContent = `${stats[0].winRate}% (${stats[0].name})`;
+                if (currentLeaderEl) currentLeaderEl.textContent = `${stats[0].name} (${stats[0].winRate}%)`;
+            } else {
+                if (bestWinrateEl) bestWinrateEl.textContent = '—';
+                if (currentLeaderEl) currentLeaderEl.textContent = '—';
             }
 
             const tbody = document.getElementById('standings-table-body');
+            if (!tbody) return;
             tbody.innerHTML = '';
             stats.forEach((s, idx) => {
                 const tr = document.createElement('tr');
@@ -1159,6 +1186,7 @@
             });
 
             const jornadasContainer = document.getElementById('jornadas-container');
+            if (!jornadasContainer) return;
             jornadasContainer.innerHTML = '';
 
             const dateGroups = {};
@@ -1291,108 +1319,121 @@
             try {
                 if (!Array.isArray(appState.matches)) appState.matches = toArray(appState.matches);
                 appState.matches.push(newMatch);
-        // HELPER PARA DETECTAR PALIZA (Blowout >= 15 pts)
-        function isBlowout(wScore, lScore) {
-            if (wScore === undefined || wScore === null || lScore === undefined || lScore === null) return false;
-            const diff = parseInt(wScore, 10) - parseInt(lScore, 10);
-            return diff >= 15;
+                saveState();
+                showToast("Partido registrado y sincronizado en la nube");
+                switchTab('resumen');
+            } catch (err) {
+                console.error("Error al registrar el partido:", err);
+                showToast("Error al guardar el partido: " + err.message, "error");
+            }
         }
 
-        function getBlowoutDiff(wScore, lScore) {
-            if (wScore === undefined || wScore === null || lScore === undefined || lScore === null) return 0;
-            return parseInt(wScore, 10) - parseInt(lScore, 10);
-        }
-
-        function renderResumen() {
+        function renderJugadores() {
+            const grid = document.getElementById('players-grid');
+            grid.innerHTML = '';
             const stats = getPlayerStats();
-            document.getElementById('kpi-total-matches').textContent = appState.matches.length;
-            document.getElementById('kpi-total-players').textContent = appState.players.length;
 
-            const blowoutsCount = appState.matches.filter(m => isBlowout(m.winnerScore, m.loserScore)).length;
-            const kpiBlowouts = document.getElementById('kpi-total-blowouts');
-            if (kpiBlowouts) kpiBlowouts.textContent = blowoutsCount;
+            stats.forEach(s => {
+                const sortedTeams = Object.entries(s.teamsUsed).sort((a, b) => b[1] - a[1]);
 
-            if (stats.length > 0) {
-                document.getElementById('kpi-best-winrate').textContent = `${stats[0].winRate}% (${stats[0].name})`;
-                document.getElementById('kpi-current-leader').textContent = `${stats[0].name} (${stats[0].winRate}%)`;
-            }
-
-            const tbody = document.getElementById('standings-table-body');
-            tbody.innerHTML = '';
-            stats.forEach((s, idx) => {
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-dark-800/40 transition';
-                tr.innerHTML = `
-                    <td class="py-3 px-2 sm:px-4 font-bold ${idx === 0 ? 'text-amber-400' : 'text-slate-500'}">#${idx + 1}</td>
-                    <td class="py-3 px-2 sm:px-4 font-bold text-white flex items-center space-x-2">
-                        <div class="w-6 h-6 rounded-md bg-brand-500/20 text-brand-400 flex items-center justify-center text-xs">${s.name.charAt(0)}</div>
-                        <span>${s.name}</span>
-                        ${idx === 0 ? '<span class="text-xs">👑</span>' : ''}
-                    </td>
-                    <td class="py-3 px-2 sm:px-4 text-center font-mono text-slate-300">${s.played}</td>
-                    <td class="py-3 px-2 sm:px-4 text-center font-mono text-emerald-400 font-semibold">${s.wins}</td>
-                    <td class="py-3 px-2 sm:px-4 text-center font-mono text-rose-400 font-semibold">${s.losses}</td>
-                    <td class="py-3 px-2 sm:px-4 text-center font-mono font-semibold ${s.currentStreakStr.includes('V') ? 'text-emerald-400' : 'text-rose-400'}">${s.currentStreakStr}</td>
-                    <td class="py-3 px-2 sm:px-4 text-right font-mono font-bold ${idx === 0 ? 'text-amber-400' : 'text-white'}">${s.winRate}%</td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            const jornadasContainer = document.getElementById('jornadas-container');
-            jornadasContainer.innerHTML = '';
-
-            const dateGroups = {};
-            appState.matches.forEach(m => {
-                if (!dateGroups[m.date]) dateGroups[m.date] = [];
-                dateGroups[m.date].push(m);
-            });
-
-            const dates = Object.keys(dateGroups).sort();
-
-            if (dates.length === 0) {
-                jornadasContainer.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">No hay jornadas registradas aún en esta temporada.</p>`;
-                return;
-            }
-
-            dates.forEach((date, index) => {
-                const matches = dateGroups[date];
-                const dayStats = {};
-                appState.players.forEach(p => dayStats[p] = { wins: 0, losses: 0 });
-
-                matches.forEach(m => {
-                    if (dayStats[m.winnerPlayer]) dayStats[m.winnerPlayer].wins++;
-                    if (dayStats[m.loserPlayer]) dayStats[m.loserPlayer].losses++;
-                });
-
-                const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                let teamsLogosHTML = sortedTeams.slice(0, 3).map(([code, count]) => {
+                    const tObj = nbaTeams.find(t => t.code === code) || { logo: '', name: code };
+                    return `
+                        <div class="flex items-center space-x-1.5 bg-dark-950 px-2.5 py-1 rounded-lg border border-slate-800 text-xs">
+                            <img src="${tObj.logo}" class="w-4 h-4 object-contain" alt="${code}">
+                            <span class="font-bold text-slate-300">${code}</span>
+                            <span class="text-slate-500 font-mono">(${count})</span>
+                        </div>
+                    `;
+                }).join('');
 
                 const card = document.createElement('div');
-                card.className = 'bg-dark-950 p-3.5 rounded-xl border border-slate-800 space-y-2';
-                
-                let statsHTML = Object.entries(dayStats)
-                    .filter(([_, data]) => (data.wins + data.losses) > 0)
-                    .map(([player, data]) => `
-                        <div class="flex justify-between text-xs py-1 border-b border-slate-800/40 last:border-0">
-                            <span class="font-medium text-slate-300">${player}</span>
-                            <span class="font-mono text-slate-400">
-                                <span class="text-emerald-400 font-semibold">${data.wins}V</span> - <span class="text-rose-400 font-semibold">${data.losses}D</span>
-                            </span>
-                        </div>
-                    `).join('');
-
+                card.className = 'bg-dark-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl space-y-5 hover:border-brand-500/40 transition';
                 card.innerHTML = `
-                    <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-                        <span class="text-xs font-bold text-brand-400 uppercase tracking-wide">Jornada ${index + 1} (${formattedDate})</span>
-                        <span class="text-[11px] font-mono bg-dark-800 text-slate-300 px-2 py-0.5 rounded-full">${matches.length} PJ</span>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-brand-600 to-indigo-600 text-white font-extrabold text-lg sm:text-xl flex items-center justify-center shadow-md">
+                                ${s.name.charAt(0)}
+                            </div>
+                            <div>
+                                <h3 class="text-base sm:text-lg font-bold text-white">${s.name}</h3>
+                                <p class="text-xs text-slate-400">Racha: <span class="font-bold ${s.currentStreakStr.includes('V') ? 'text-emerald-400' : 'text-rose-400'}">${s.currentStreakStr}</span></p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-brand-500/10 text-brand-400 border border-brand-500/20 rounded-full font-mono font-bold text-xs">${s.winRate}% V</span>
                     </div>
-                    <div class="space-y-1">
-                        ${statsHTML}
+
+                    <div class="grid grid-cols-3 gap-2 bg-dark-950 p-3 rounded-xl border border-slate-800/80 text-center">
+                        <div>
+                            <p class="text-[10px] text-slate-400 uppercase font-semibold">Jugados</p>
+                            <p class="text-sm sm:text-base font-bold text-white font-mono mt-0.5">${s.played}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-400 uppercase font-semibold">Ganados</p>
+                            <p class="text-sm sm:text-base font-bold text-emerald-400 font-mono mt-0.5">${s.wins}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-400 uppercase font-semibold">Perdidos</p>
+                            <p class="text-sm sm:text-base font-bold text-rose-400 font-mono mt-0.5">${s.losses}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Equipos Más Usados</p>
+                        <div class="flex flex-wrap gap-2">
+                            ${teamsLogosHTML || '<span class="text-xs text-slate-500">Sin registros</span>'}
+                        </div>
                     </div>
                 `;
-                jornadasContainer.appendChild(card);
+                grid.appendChild(card);
             });
-            applyRolePermissions();
-            if (window.lucide) lucide.createIcons();
+        }
+
+        function openAddPlayerModal() {
+            if (currentUserRole !== 'admin') {
+                showToast("Acceso denegado: Modo Invitado", "error");
+                return;
+            }
+            document.getElementById('new-player-name').value = '';
+            document.getElementById('add-player-modal').classList.remove('hidden');
+        }
+
+        function closeAddPlayerModal() {
+            document.getElementById('add-player-modal').classList.add('hidden');
+        }
+
+        function handleAddPlayer(e) {
+            e.preventDefault();
+            if (currentUserRole !== 'admin') return;
+
+            const name = document.getElementById('new-player-name').value.trim();
+            if (!name) return;
+            if (appState.players.includes(name)) {
+                showToast("El jugador ya existe", "error");
+                return;
+            }
+            appState.players.push(name);
+            saveState();
+            closeAddPlayerModal();
+            renderJugadores();
+            showToast(`Jugador ${name} agregado con éxito`);
+        }
+
+        function initH2H() {
+            const p1 = document.getElementById('h2h-player1');
+            const p2 = document.getElementById('h2h-player2');
+
+            p1.innerHTML = '';
+            p2.innerHTML = '';
+
+            appState.players.forEach(p => {
+                p1.innerHTML += `<option value="${p}">${p}</option>`;
+                p2.innerHTML += `<option value="${p}">${p}</option>`;
+            });
+
+            if (appState.players.length > 1) p2.selectedIndex = 1;
+
+            updateH2H();
         }
 
         function updateH2H() {
@@ -1547,7 +1588,10 @@
                     </td>
                     <td class="py-3 px-3 text-center font-mono font-bold text-amber-400">
                         <div class="flex flex-col items-center justify-center space-y-1">
-                            <span class="bg-dark-950 px-2 py-0.5 rounded border border-slate-800">${scoreDisplay}</span>
+                            <button onclick="openEditMatchModal('${m.id}')" class="bg-dark-950 hover:bg-dark-800 px-2.5 py-1 rounded border border-slate-800 hover:border-brand-500/50 transition active-touch cursor-pointer group" title="Haz clic para agregar o editar el score">
+                                <span class="${hasScores ? 'text-amber-400' : 'text-slate-500 font-normal'} group-hover:text-brand-400">${scoreDisplay}</span>
+                                ${!hasScores ? '<i data-lucide="plus" class="w-3 h-3 inline ml-1 text-slate-500 group-hover:text-brand-400"></i>' : ''}
+                            </button>
                             ${blowout ? `<span class="inline-flex items-center space-x-1 bg-gradient-to-r from-rose-600 to-amber-600 text-white font-extrabold text-[9px] px-2 py-0.5 rounded-full shadow animate-pulse"><span>🔥 PALIZA (+${diff})</span></span>` : ''}
                         </div>
                     </td>
@@ -1575,7 +1619,7 @@
             if (window.lucide) lucide.createIcons();
         }
 
-        // --- FUNCIONES DE EDICIÓN MEJORADAS Y COMPATIBLES ---
+        // --- FUNCIONES DE EDICIÓN ---
         function openEditMatchModal(matchId) {
             if (currentUserRole !== 'admin') {
                 showToast("Acceso denegado: Modo Invitado", "error");
@@ -1598,7 +1642,6 @@
             const editWScore = document.getElementById('edit-winner-score');
             const editLScore = document.getElementById('edit-loser-score');
 
-            // Carga dinámica de opciones en los selectores
             editWPlayer.innerHTML = '';
             editLPlayer.innerHTML = '';
             editWTeam.innerHTML = '';
@@ -1614,7 +1657,6 @@
                 editLTeam.innerHTML += `<option value="${t.code}">${t.name} (${t.code})</option>`;
             });
 
-            // Establece valores guardados
             editWPlayer.value = match.winnerPlayer;
             editLPlayer.value = match.loserPlayer;
             editWTeam.value = match.winnerTeam;
@@ -1661,7 +1703,6 @@
                     loserScore: loserScore !== "" ? parseInt(loserScore, 10) : null
                 };
                 
-                // Guardar localmente y sincronizar en Firebase Realtime Database
                 saveState();
                 closeEditMatchModal();
                 renderHistorial();
@@ -1691,7 +1732,7 @@
             checkSessionGate();
         }
 
-        // --- CONEXIÓN A FIREBASE Y AUTO-CORRECCIÓN ---
+        // CONEXIÓN A FIREBASE
         let db;
         let cargandoDesdeNube = false;
 
